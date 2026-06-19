@@ -35,73 +35,81 @@
 
     <main class="p-4 space-y-4">
         @forelse($menus as $menu)
-            @php
-                $status = strtolower($menu->status ?? 'available');
-                $isSoldOut = ($status === 'habis' || $status === 'unavailable');
-                $menuImg = $menu->image ? (str_contains($menu->image, 'http') ? $menu->image : asset($menu->image)) : 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500';
-            @endphp
+    @php
+        $status = strtolower($menu->status ?? 'available');
+        $isSoldOut = ($status === 'habis' || $status === 'empty');
+        $menuImg = $menu->image ? (str_contains($menu->image, 'http') ? $menu->image : asset($menu->image)) : 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500';
+    @endphp
 
-            <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm flex gap-4 items-start relative">
-                
-                <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2 flex-wrap">
-                        <h3 class="font-bold text-base text-gray-900 truncate {{ $isSoldOut ? 'line-through text-gray-400' : '' }}">
-                            {{ $menu->name ?? 'Menu Kuliner' }}
-                        </h3>
-                        @if(str_contains(strtolower($menu->name), 'geprek'))
-                            <span class="bg-red-50 text-red-600 text-[9px] font-extrabold px-1.5 py-0.5 rounded uppercase">Spicy</span>
-                        @endif
-                    </div>
-                    <p class="text-xs text-gray-400 mt-1 line-clamp-2 leading-relaxed">
-                        {{ $menu->description ?? 'Tidak ada deskripsi makanan.' }}
-                    </p>
-                    <p class="text-sm font-extrabold text-gray-900 mt-2 mb-3">
-                        Rp{{ number_format($menu->price, 0, ',', '.') }}
-                    </p>
+    <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm flex gap-4 items-start relative">
+        
+        <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+                <h3 class="font-bold text-base text-gray-900 truncate {{ $isSoldOut ? 'line-through text-gray-400' : '' }}">
+                    {{ $menu->name ?? 'Menu Kuliner' }}
+                </h3>
+                @if(str_contains(strtolower($menu->name), 'geprek') && !$isSoldOut)
+                    <span class="bg-red-50 text-red-600 text-[9px] font-extrabold px-1.5 py-0.5 rounded uppercase">Spicy</span>
+                @endif
+            </div>
+            <p class="text-xs text-gray-400 mt-1 line-clamp-2 leading-relaxed">
+                {{ $menu->description ?? 'Tidak ada deskripsi makanan.' }}
+            </p>
+            <p class="text-sm font-extrabold text-gray-900 mt-2 mb-3">
+                Rp{{ number_format($menu->price, 0, ',', '.') }}
+            </p>
 
-                    @if(!$isSoldOut)
-                        <form action="{{ route('student.cart.add', $menu->id) }}" method="POST" class="flex items-center gap-2 flex-wrap">
-                            @csrf
-                            
-                            <div class="flex items-center border border-gray-200 rounded-xl bg-gray-50 p-0.5 shadow-inner">
-                                <button type="button" onclick="decrementQty({{ $menu->id }})" class="w-7 h-7 flex items-center justify-center text-gray-500 font-bold hover:bg-gray-200 rounded-lg transition cursor-pointer">
-                                    <i class="fa-solid fa-minus text-[9px]"></i>
-                                </button>
-
-                                <input type="number" id="quantity_{{ $menu->id }}" name="quantity" value="1" min="1" class="w-7 text-center text-xs font-black bg-transparent border-none focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
-
-                                <button type="button" onclick="incrementQty({{ $menu->id }})" class="w-7 h-7 flex items-center justify-center text-orange-600 font-bold hover:bg-orange-100 rounded-lg transition cursor-pointer">
-                                    <i class="fa-solid fa-plus text-[9px]"></i>
-                                </button>
-                            </div>
-
-                            <button type="submit" class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded-xl text-xs font-bold transition shadow-sm cursor-pointer flex items-center gap-1.5">
-                                <i class="fa-solid fa-basket-shopping text-[10px]"></i> Tambah
-                            </button>
-                        </form>
-                    @endif
-                </div>
-
-                <div class="relative w-24 h-24 bg-gray-100 rounded-2xl overflow-hidden flex-shrink-0 shadow-md">
-                    <img src="{{ $menuImg }}" alt="{{ $menu->name }}" class="w-full h-full object-cover">
+            @if(!$isSoldOut)
+                <form action="{{ route('student.cart.add', $menu->id) }}" method="POST" class="flex items-center gap-2 flex-wrap">
+                    @csrf
                     
-                    @if($isSoldOut)
-                        <div class="absolute inset-0 bg-black/60 flex items-center justify-center">
-                            <span class="text-white text-[10px] font-black tracking-wider">HABIS</span>
-                        </div>
-                    @endif
-                </div>
+                    <div class="flex items-center border border-gray-200 rounded-xl bg-gray-50 p-0.5 shadow-inner">
+                        <button type="button" onclick="decrementQty({{ $menu->id }})" class="w-7 h-7 flex items-center justify-center text-gray-500 font-bold hover:bg-gray-200 rounded-lg transition cursor-pointer">
+                            <i class="fa-solid fa-minus text-[9px]"></i>
+                        </button>
 
-            </div>
-        @empty
-            <div class="text-center py-16">
-                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 mx-auto mb-3">
-                    <i class="fa-solid fa-utensils text-2xl"></i>
+                        <input type="number" id="quantity_{{ $menu->id }}" name="quantity" value="1" min="1" class="w-7 text-center text-xs font-black bg-transparent border-none focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+
+                        <button type="button" onclick="incrementQty({{ $menu->id }})" class="w-7 h-7 flex items-center justify-center text-orange-600 font-bold hover:bg-orange-100 rounded-lg transition cursor-pointer">
+                            <i class="fa-solid fa-plus text-[9px]"></i>
+                        </button>
+                    </div>
+
+                    <button type="submit" class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded-xl text-xs font-bold transition shadow-sm cursor-pointer flex items-center gap-1.5">
+                        <i class="fa-solid fa-basket-shopping text-[10px]"></i> Tambah
+                    </button>
+                </form>
+            @else
+                <div class="flex items-center mt-2">
+                    <span class="bg-gray-100 text-gray-400 font-bold text-xs px-4 py-2 rounded-xl cursor-not-allowed border border-gray-200 select-none">
+                        ❌ Stok Habis
+                    </span>
                 </div>
-                <h3 class="font-bold text-gray-700 text-sm">Menu belum tersedia</h3>
-                <p class="text-xs text-gray-400 max-w-xs mx-auto mt-1 px-4">Etalase makanan di stan ini masih kosong di database.</p>
-            </div>
-        @endforelse
+            @endif
+        </div>
+
+        <div class="relative w-24 h-24 bg-gray-100 rounded-2xl overflow-hidden flex-shrink-0 shadow-md">
+            <img src="{{ $menuImg }}" alt="{{ $menu->name }}" class="w-full h-full object-cover {{ $isSoldOut ? 'grayscale contrast-75 brightness-75' : '' }}">
+            
+            @if($isSoldOut)
+                <div class="absolute inset-0 bg-black/40 flex items-center justify-center p-1">
+                    <span class="bg-red-600 text-white font-black text-[9px] uppercase tracking-wider px-2 py-1 rounded-md shadow-md border border-red-500 animate-pulse text-center w-11/12">
+                        SOLD OUT
+                    </span>
+                </div>
+            @endif
+        </div>
+
+    </div>
+@empty
+    <div class="text-center py-16">
+        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 mx-auto mb-3">
+            <i class="fa-solid fa-utensils text-2xl"></i>
+        </div>
+        <h3 class="font-bold text-gray-700 text-sm">Menu belum tersedia</h3>
+        <p class="text-xs text-gray-400 max-w-xs mx-auto mt-1 px-4">Etalase makanan di stan ini masih kosong di database.</p>
+    </div>
+@endforelse
     </main>
 
     <script>

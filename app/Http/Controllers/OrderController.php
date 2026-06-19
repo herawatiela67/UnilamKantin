@@ -308,6 +308,22 @@ class OrderController extends Controller
             ], 500);
         }
     }
+
+    public function checkNotifications()
+{
+    $userId = auth()->id();
+
+    // Hitung berapa pesanan milik mahasiswa ini yang statusnya diubah stan dan BELUM DIBACA (is_read = 0)
+    // Dan statusnya bukan lagi 'pending' / 'masuk' (artinya sudah mulai diproses stan)
+    $unreadCount = \App\Models\Order::where('user_id', $userId)
+        ->where('is_read', 0)
+        ->whereIn('status', ['dimasak', 'siap diambil', 'selesai'])
+        ->count();
+
+    return response()->json([
+        'unreadCount' => $unreadCount
+    ]);
+}
     public function destroy(string $id)
     {
         //

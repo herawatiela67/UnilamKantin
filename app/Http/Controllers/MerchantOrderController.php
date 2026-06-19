@@ -37,22 +37,23 @@ class MerchantOrderController extends Controller
 }
 
    public function updateStatus(Request $request, $id)
-    {
-        // 1. Cari data order berdasarkan ID yang dikirim
-        $order = Order::findOrFail($id);
+{
+    $order = \App\Models\Order::findOrFail($id);
+    
+    // Validasi input status yang masuk
+    $request->validate([
+        'status' => 'required|in:dimasak,siap diambil,selesai,batal'
+    ]);
 
-        // 2. Ambil status baru dari form input (misal: 'dimasak', 'siap diambil')
-        // Kita beri fallback default 'dimasak' kalau inputan dari form kosong
-        $newStatus = $request->input('status', 'dimasak');
+    // Update status sesuai tombol yang diklik abang stan
+    $order->status = $request->status;
+    
+    // Setiap kali ada perubahan status baru dari stan, 
+    // set is_read jadi 0 lagi biar lonceng di HP mahasiswa nyala merah lagi!
+    $order->is_read = 0; 
+    
+    $order->save();
 
-        // 3. Update status data tersebut
-        $order->status = $newStatus;
-        
-        // 4. WAJIB: Simpan perubahan ke database MariaDB kamu!
-        $order->save();
-
-        // 5. Kembalikan halaman ke dashboard merchant dengan pesan sukses
-        return redirect()->route('merchant.home')->with('success', 'Status pesanan berhasil diperbarui!');
-    }
-
+    return redirect()->back()->with('success', 'Status pesanan berhasil diperbarui!');
+}
 }

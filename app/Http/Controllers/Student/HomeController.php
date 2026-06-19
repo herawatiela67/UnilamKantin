@@ -16,54 +16,102 @@ use Illuminate\Support\Facades\Session;
 
 class HomeController extends Controller
 {
-  public function index()
-    {
-        // 1. DATA ASLI KAMU: Ambil semua menu yang tersedia
-        $menus = \App\Models\Menu::where('status', 'available')->get();
-        
-        // 2. KOREKSI RATING & POPULARITAS: Ambil data stands dinamis (Urut paling laku)
-        $stands = \App\Models\Stand::leftJoin('orders', function($join) {
-        $join->on('stands.id', '=', 'orders.stand_id')
-             ->where('orders.status', '=', 'selesai');
-            })
-            ->select(
-                'stands.id',
-                'stands.stand_name',
-                'stands.stand_number',
-                'stands.image',       // 🟢 Sekarang aman dipanggil!
-                'stands.description', // 🟢 Sekarang aman dipanggil!
-                'stands.status',
-                DB::raw('(SELECT COUNT(*) FROM orders WHERE orders.stand_id = stands.id AND orders.status IN ("masuk", "dimasak")) as orders_count'),
-                DB::raw('COUNT(orders.id) as total_terjual')
-            )
-            ->groupBy('stands.id', 'stands.stand_name', 'stands.stand_number', 'stands.image', 'stands.description', 'stands.status')
-            ->orderBy('total_terjual', 'desc')
-            ->get();
+ public function index()
+{
+    // 1. DATA ASLI KAMU: Ambil semua menu yang tersedia
+    $menus = \App\Models\Menu::where('status', 'available')->get();
+    
+    // 2. KOREKSI RATING & POPULARITAS: Ambil data stands dinamis (Urut paling laku)
+    $stands = \App\Models\Stand::leftJoin('orders', function($join) {
+    $join->on('stands.id', '=', 'orders.stand_id')
+         ->where('orders.status', '=', 'selesai');
+        })
+        ->select(
+            'stands.id',
+            'stands.stand_name',
+            'stands.stand_number',
+            'stands.image',       // 🟢 Sekarang aman dipanggil!
+            'stands.description', // 🟢 Sekarang aman dipanggil!
+            'stands.status',
+            DB::raw('(SELECT COUNT(*) FROM orders WHERE orders.stand_id = stands.id AND orders.status IN ("masuk", "dimasak")) as orders_count'),
+            DB::raw('COUNT(orders.id) as total_terjual')
+        )
+        ->groupBy('stands.id', 'stands.stand_name', 'stands.stand_number', 'stands.image', 'stands.description', 'stands.status')
+        ->orderBy('total_terjual', 'desc')
+        ->get();
 
-        // 4. DATA ASLI KAMU: Ambil data tracking pesanan aktif milik mahasiswa
-        $activeOrders = \App\Models\Order::with(['stand', 'orderDetails.menu'])
-            ->where('user_id', Auth::id())
-            ->whereIn('status', ['diterima', 'dimasak', 'siap diambil'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+    // 3. DATA ASLI KAMU: Ambil data tracking pesanan aktif milik mahasiswa
+    $activeOrders = \App\Models\Order::with(['stand', 'orderDetails.menu'])
+        ->where('user_id', Auth::id())
+        ->whereIn('status', ['diterima', 'dimasak', 'siap diambil'])
+        ->orderBy('created_at', 'desc')
+        ->get();
 
-        $menuTerbaru = DB::table('menus')
-            ->join('stands', 'stands.id', '=', 'menus.stand_id')
-            ->select('menus.name as menu_name', 'stands.stand_name', 'menus.price', 'menus.created_at')
-            ->select('menus.id as menu_id', 'menus.name as menu_name', 'stands.id as stand_id', 'stands.stand_name', 'menus.price', 'menus.created_at')
-            // 🟢 MANTRA BARU: Hanya ambil menu yang dibuat dalam 20 menit terakhir dari waktu sekarang
-            ->where('menus.created_at', '>=', now()->subMinutes(20))
-            ->orderBy('menus.created_at', 'desc')
-            ->first();
+    // 4. 🆕 FITUR NOTIFIKASI DINAMIS (Otomatis Hilang Jika Sudah Selesai Diambil)
+    // Hanya mengambil pesanan yang berstatus aktif dan butuh dipantau mahasiswa
+    $activeNotifications = \App\Models\Order::where('user_id', Auth::id())
+        ->whereIn('status', ['pending', 'masuk', 'diterima', 'dimasak', 'siap diambil'])
+        ->with('stand')
+        ->orderBy('updated_at', 'desc')
+        ->get();
 
-        // Mengelompokkan order berdasarkan waktu checkout yang sama
-        $groupedOrders = $activeOrders->groupBy(function ($order) {
-            return $order->created_at->format('Y-m-d H:i:s'); 
+    $menuTerbaru = DB::table('menus')
+        ->join('stands', 'stands.id', '=', 'menus.stand_id')
+        ->select('menus.name as menu_name', 'stands.stand_name', 'menus.price', 'menus.created_at')
+        ->select('menus.id as menu_id', 'menus.name as menu_name', 'stands.id as stand_id', 'stands.stand_name', 'menus.price', 'menus.created_at')
+        // 🟢 MANTRA BARU: Hanya ambil menu yang dibuat dalam 20 menit terakhir dari waktu sekarang
+        ->where('menus.created_at', '>=', now()->subMinutes(20))
+        ->orderBy('menus.created_at', 'desc')
+        ->first();
+
+    // Mengelompokkan order berdasarkan waktu checkout yang sama
+    $groupedOrders = $activeOrders->groupBy(function ($order) {
+        return $order->created_at->format('Y-m-d H:i:s'); 
+    });
+
+    // 5. LEMPAR SEMUA VARIABEL KE VIEW STUDENT (Gabungan Fitur Lama + Baru)
+    // 🟢 Sudah diselipkan variabel 'activeNotifications' di baris compact ini ya, El!
+    return view('student.home', compact('menus', 'stands', 'menuTerbaru', 'groupedOrders', 'activeNotifications'));
+}
+
+public function notificationPage()
+{
+    $userId = auth()->id();
+
+    // 1. Ambil SEMUA pesanan milik user (termasuk yang dimasak, siap diambil, maupun yang sudah SELESAI/BATAL)
+    $groupedOrders = \App\Models\Order::where('user_id', $userId)
+        ->with('stand')
+        ->orderBy('updated_at', 'desc') // Yang paling baru diubah statusnya ada di paling atas
+        ->get()
+        ->groupBy(function($date) {
+            return $date->updated_at->format('Y-m-d'); // Tetap dikelompokkan pakai tanggal asli kamu
         });
 
-        // 5. LEMPAR SEMUA VARIABEL KE VIEW STUDENT (Gabungan Fitur Lama + Baru)
-        return view('student.home', compact('menus', 'stands', 'menuTerbaru', 'groupedOrders'));
-    }
+    // 2. Trik Otomatis: Begitu halaman dibuka, tandai semua pesanan yang tadinya belum dibaca menjadi "Sudah Dibaca" (is_read = 1)
+    \App\Models\Order::where('user_id', $userId)
+        ->where('is_read', 0)
+        ->update(['is_read' => 1]);
+
+    // Oper data kelompok pesanan ke view
+    return view('student.notifications', compact('groupedOrders'));
+}
+
+ public function checkNotifications()
+{
+    $userId = auth()->id();
+
+    // Menghitung pesanan aktif milik mahasiswa yang statusnya diubah stan dan belum dibaca
+    $unreadCount = \App\Models\Order::where('user_id', $userId)
+        ->where('is_read', 0)
+        ->whereIn('status', ['dimasak', 'siap diambil', 'selesai'])
+        ->count();
+
+    return response()->json([
+        'unreadCount' => $unreadCount
+    ]);
+}
+
+
 
 
    public function showStand($id)

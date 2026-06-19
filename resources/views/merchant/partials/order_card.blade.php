@@ -50,19 +50,27 @@
             </p>
         </div>
 
-        @if(isset($action) && $action !== 'selesai')
-            <form action="{{ route('orders.updateStatus', $order->id) }}" method="POST">
-                @csrf
-                <input type="hidden" name="status" value="{{ $action }}">
-                <button type="submit" class="{{ $color }} text-white font-bold text-xs px-4 py-2 rounded-xl shadow-md transition transform active:scale-95 cursor-pointer">
-                    {{ $btnText }}
-                </button>
-            </form>
-        @else
-            <div class="flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-3 py-1.5 rounded-xl shadow-sm">
-                <i class="fa-solid fa-circle-check text-[10px]"></i>
-                <span>Selesai</span>
-            </div>
-        @endif
+        @if(isset($action) && $order->status != 'selesai')
+    <form action="{{ route('merchant.order.update-status', $order->id) }}" method="POST" class="mt-3">
+        @csrf
+        @method('PUT')
+        
+        <input type="hidden" name="status" value="{{ $action }}">
+        
+        <button type="submit" class="w-full {{ $color ?? 'bg-orange-500' }} text-white font-extrabold text-xs px-4 py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm transform active:scale-98"
+            @if($action == 'selesai') onclick="return confirm('Pastikan mahasiswa sudah membayar dan menerima makanannya ya, Bang!')" @endif>
+            
+            @if($action == 'dimasak')
+                <i class="fa-solid fa-fire-burner animate-pulse"></i>
+            @elseif($action == 'siap diambil')
+                <i class="fa-solid fa-bell"></i>
+            @elseif($action == 'selesai')
+                <i class="fa-solid fa-circle-check"></i>
+            @endif
+
+            {{ $btnText ?? 'Proses Pesanan' }}
+        </button>
+    </form>
+@endif
     </div>
 </div>

@@ -33,32 +33,34 @@ class MenuController extends Controller
      */
  public function indexMerchant()
 {
-    $merchant = Auth::user();
-    
-    // 1. Ambil data stan milik pedagang yang sedang login
-    $stand = \App\Models\Stand::where('user_id', $merchant->id)->first();
+    $user = auth()->user();
+    $stand = \App\Models\Stand::where('user_id', $user->id)->first();
+    $standId = $stand->id ?? 0;
 
-    if (!$stand) {
-        return redirect()->back()->with('error', 'Akun Anda belum terhubung dengan stan kuliner manapun.');
-    }
+    $menus = \App\Models\Menu::where('stand_id', $standId)->get();
 
-    // 2. Ambil daftar menu jualan (Kode lama kamu)
-    $menus = \App\Models\Menu::where('stand_id', $stand->id)->get();
+    // 🔥 PERBAIKAN DI SINI: Satukan status 'pending' dan 'masuk' pakai whereIn
+    $orderMasuk = \App\Models\Order::where('stand_id', $standId)
+        ->whereIn('status', ['pending', 'masuk'])
+        ->get();
 
-    // 3. 🟢 TAMBAHAN BARU: Ambil data pesanan mahasiswa khusus untuk stan ini
-    $orders = \App\Models\Order::with(['user', 'orderDetails.menu'])
-            ->where('stand_id', $stand->id)
-            ->orderBy('created_at', 'asc') // 'asc' membuat yang duluan masuk ada di paling atas
-            ->get();
+    // Query status lainnya tetap aman seperti biasa
+    $sedangDimasak = \App\Models\Order::where('stand_id', $standId)->where('status', 'dimasak')->get();
+    $orderSelesai = \App\Models\Order::where('stand_id', $standId)->where('status', 'selesai')->get();
 
-    // 4. 🟢 PERBAIKAN FILTER: Menggunakan 'pending' (sesuai status awal di database KantinQuick)
-    // Jika di DB kamu status awalnya 'pending', maka wajib pakai 'pending' agar datanya lolos filter dan muncul menunya
-    $orderMasuk    = $orders->whereIn('status', ['pending', 'diterima']); 
-    $sedangDimasak = $orders->where('status', 'dimasak');
-    $orderSelesai  = $orders->whereIn('status', ['siap diambil', 'selesai']);
+    $readyOrders = \App\Models\Order::where('stand_id', $standId)
+        ->where('status', 'siap diambil')
+        ->orderBy('updated_at', 'desc')
+        ->get();
 
-    // 5. KUNCI SUKSES: Lemparkan semua variabel baru ke dalam compact()
-    return view('merchant.home', compact('stand', 'menus', 'orderMasuk', 'sedangDimasak', 'orderSelesai'));
+    return view('merchant.home', compact(
+        'stand', 
+        'menus', 
+        'orderMasuk', 
+        'sedangDimasak', 
+        'orderSelesai', 
+        'readyOrders'
+    ));
 }
     /**
      * Menampilkan formulir tambah menu baru (Web Blade)

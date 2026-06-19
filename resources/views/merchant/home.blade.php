@@ -1,3 +1,8 @@
+@php
+    $standId = $stand->id ?? 0;
+    // Definisikan variabel $readyOrders di paling atas agar terbaca aman dari atas sampai bawah
+    $readyOrders = \App\Models\Order::where('stand_id', $standId)->where('status', 'siap diambil')->orderBy('updated_at', 'desc')->get();
+@endphp
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -5,10 +10,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Pesanan Stand - UnilamKantin</title>
     <script src="https://cdn.tailwindcss.com"></script>
-<audio id="notifAlarm" loop>
-    <source src="https://assets.mixkit.co/active_storage/sfx/911/911-84.wav" type="audio/wav">
-    <source src="https://www.soundjay.com/buttons/sounds/beep-06.mp3" type="audio/mp3">
-</audio>
+    <audio id="notifAlarm" loop>
+        <source src="https://assets.mixkit.co/active_storage/sfx/911/911-84.wav" type="audio/wav">
+        <source src="https://www.soundjay.com/buttons/sounds/beep-06.mp3" type="audio/mp3">
+    </audio>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style> body { font-family: 'Plus Jakarta Sans', sans-serif; } </style>
@@ -47,7 +52,8 @@
                 </button>
             </form>
         </div>
- </div>
+    </div>
+
     @if(session('success'))
         <div class="m-4 bg-green-50 text-green-600 p-3.5 rounded-xl text-xs font-bold border border-green-100 flex items-center gap-2">
             <i class="fa-solid fa-circle-check"></i>
@@ -56,12 +62,16 @@
     @endif
 
     <div class="p-4 flex-1 space-y-4">
-        <div class="flex bg-gray-100 p-1 rounded-xl gap-1 mb-2 text-[11px]">
+        
+        <div class="flex bg-gray-100 p-1 rounded-xl gap-1 mb-2 text-[10px]">
             <button onclick="switchSubTab('masuk')" id="btn-sub-masuk" class="sub-tab-btn flex-1 py-2 font-bold rounded-lg transition bg-white text-gray-800 shadow-sm">
                 Masuk ({{ $orderMasuk->count() }})
             </button>
             <button onclick="switchSubTab('dimasak')" id="btn-sub-dimasak" class="sub-tab-btn flex-1 py-2 font-bold rounded-lg transition text-gray-500">
                 Dimasak ({{ $sedangDimasak->count() }})
+            </button>
+            <button onclick="switchSubTab('siap-diambil')" id="btn-sub-siap-diambil" class="sub-tab-btn flex-1 py-2 font-bold rounded-lg transition text-gray-500">
+                Siap Diambil ({{ $readyOrders->count() }})
             </button>
             <button onclick="switchSubTab('selesai')" id="btn-sub-selesai" class="sub-tab-btn flex-1 py-2 font-bold rounded-lg transition text-gray-500">
                 Selesai ({{ $orderSelesai->count() }})
@@ -83,7 +93,17 @@
                 <div class="text-center py-12 text-gray-300"><i class="fa-solid fa-fire-burner text-4xl mb-2"></i><p class="text-xs font-medium text-gray-400">Tidak ada masakan aktif.</p></div>
             @else
                 @foreach($sedangDimasak as $order)
-                    @include('merchant.partials.order_card', ['order' => $order, 'action' => 'siap diambil', 'btnText' => 'Siap Diambil', 'color' => 'bg-blue-600 hover:bg-blue-700'])
+                    @include('merchant.partials.order_card', ['order' => $order, 'action' => 'siap diambil', 'btnText' => 'Kabari Mahasiswa (Matang)', 'color' => 'bg-amber-500 hover:bg-amber-600'])
+                @endforeach
+            @endif
+        </div>
+
+        <div id="sub-content-siap-diambil" class="sub-tab-content hidden space-y-3">
+            @if($readyOrders->isEmpty())
+                <div class="text-center py-12 text-gray-300"><i class="fa-solid fa-bell text-4xl mb-2 animate-pulse"></i><p class="text-xs font-medium text-gray-400">Meja stand bersih. Belum ada makanan siap diambil.</p></div>
+            @else
+                @foreach($readyOrders as $order)
+                    @include('merchant.partials.order_card', ['order' => $order, 'action' => 'selesai', 'btnText' => 'Serahkan & Selesai', 'color' => 'bg-green-600 hover:bg-green-700'])
                 @endforeach
             @endif
         </div>
@@ -129,7 +149,7 @@
         let alarmMuted = false;
 
         if (alarm) {
-            alarm.volume = 1.0; // Paksa volume maksimal suara laptop
+            alarm.volume = 1.0; 
         }
 
         function cekPesananMasuk() {
@@ -137,32 +157,25 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.adaPesananBaru) {
-                        // Bunyikan alarm sirene jika belum di-mute sementara
                         if (!alarmMuted) {
                             if (alarm) {
                                 alarm.play().catch(err => console.log("Menunggu interaksi pertama klik..."));
                             }
                         }
-                        
-                        // Opsional: Tampilkan alert/notif teks jumlah pesanan di layar dashboard
                         console.log("📢 Ada " + data.jumlahPesanan + " pesanan masuk, El! Segera masak!");
                     } else {
-                        // Kalau semua pesanan berstatus pending/masuk sudah diklik "Terima" atau "Dimasak"
-                        // Maka matikan alarm secara otomatis agar tidak bising lagi
                         if (alarm) {
                             alarm.pause();
                             alarm.currentTime = 0;
                         }
-                        alarmMuted = false; // Reset status mute untuk pesanan berikutnya nanti
+                        alarmMuted = false; 
                     }
                 })
                 .catch(error => console.error('Gagal memuat status pesanan:', error));
         }
 
-        // Cek otomatis setiap 10 detik non-stop
         setInterval(cekPesananMasuk, 10000);
 
-        // Pancingan klik pertama agar browser mengizinkan keluar suara
         document.addEventListener('click', function() {
             console.log("Sistem audio stand diaktifkan!");
         }, { once: true });

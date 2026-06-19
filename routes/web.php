@@ -45,9 +45,10 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/checkout', [HomeController::class, 'checkout'])->name('student.checkout');
         Route::get('/student/track/{id}', [HomeController::class, 'trackOrder'])->name('student.order.track');
         Route::get('/orders', [HomeController::class, 'ordersHistory'])->name('orders.index');
-    });
-
+        Route::get('/student/notifications', [App\Http\Controllers\Student\HomeController::class, 'notificationPage'])->name('student.notifications');
+        Route::get('/student/check-notifications', [App\Http\Controllers\Student\HomeController::class, 'checkNotifications'])->name('customer.check.notifications');
     // 🛡️ BLOCKADE 2: KHUSUS PEDAGANG (STAND)
+    });
     Route::middleware(['can:access-merchant'])->group(function () {
         Route::get('/merchant/home', [\App\Http\Controllers\MenuController::class, 'indexMerchant'])->name('merchant.home');
         Route::get('/merchant/menus', [\App\Http\Controllers\MenuController::class, 'listMenusMerchant'])->name('merchant.menu.index');
@@ -60,8 +61,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/merchant/orders', [MerchantOrderController::class, 'index'])->name('merchant.orders.index');
         Route::post('/orders/{id}/update-status', [MerchantOrderController::class, 'updateStatus'])->name('orders.updateStatus');
         Route::post('/merchant/stand/toggle', [\App\Http\Controllers\MenuController::class, 'toggleStandStatus'])->name('merchant.stand.toggleStatus');
-        // Pastikan taruh di dalam middleware auth milik akun Stand ya, El!
-Route::get('/merchant/check-new-orders', [App\Http\Controllers\MenuController::class, 'checkNewOrders'])->name('merchant.check.new.orders');
+        Route::get('/merchant/check-new-orders', [App\Http\Controllers\MenuController::class, 'checkNewOrders'])->name('merchant.check.new.orders');
+        Route::put('/merchant/order/{id}/update', [MerchantOrderController::class, 'updateStatus'])->name('merchant.order.update-status');
     });
 
     // Proses Logout Web
