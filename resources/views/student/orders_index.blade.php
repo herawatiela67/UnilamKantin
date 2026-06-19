@@ -54,7 +54,7 @@
                                     {{ optional($order->stand)->stand_name ?? 'Stan Kuliner' }}
                                 </h3>
                                 <p class="text-sm font-bold text-gray-800 truncate">
-                                    ID Pesanan: #{{ $order->id }}
+                                    Pesanan: {{ $order->id }}
                                 </p>
                             </div>
                             <div class="text-right">
@@ -68,7 +68,6 @@
         @endif
     </main>
 
-    <x-navbar-student active="orders" />
-
+<x-navbar-student active="orders" />
 </body>
 </html>

@@ -41,16 +41,7 @@
             
             <div class="flex justify-between items-center text-sm">
                 <span class="text-gray-400">Status Akun</span>
-                
-                @if(strtolower($user->role ?? 'student') === 'merchant')
-                    <span class="text-[10px] font-extrabold bg-amber-50 text-amber-600 px-2 py-0.5 rounded-md uppercase tracking-wide border border-amber-100">
-                        Pedagang / Merchant
-                    </span>
-                @else
-                    <span class="text-[10px] font-extrabold bg-green-50 text-green-600 px-2 py-0.5 rounded-md uppercase tracking-wide border border-green-100">
-                        Mahasiswa
-                    </span>
-                @endif
+                <span class="text-[10px] font-extrabold bg-green-50 text-green-600 px-2 py-0.5 rounded-md uppercase tracking-wide border border-green-100">Mahasiswa</span>
             </div>
         </div>
 
@@ -64,7 +55,6 @@
         </div>
     </main>
 
-    <x-navbar-student active="profile" />
-
+<x-navbar-student active="profile" />
 </body>
 </html>

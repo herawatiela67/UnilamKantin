@@ -176,8 +176,7 @@
         @endif
     </main>
 
-    <x-navbar-student active="cart" />
-
+<x-navbar-student active="cart" />
     <script>
         function togglePaymentChannels(show) {
             const container = document.getElementById('digital-channels');

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Menu;
 use App\Models\Stand;
+use App\Models\Order; 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -162,27 +163,28 @@ class MenuController extends Controller
         return redirect()->route('merchant.home')->with('success', 'Status menu ' . $menu->name . ' berhasil diperbarui!');
     }
 
-  public function toggleStandStatus() {
-    $user = Auth::user();
-    
-    // Ambil data stand milik merchant yang login
-    $stand = DB::table('stands')->where('user_id', $user->id)->first();
+ public function toggleStandStatus(Request $request)
+{
+    // 1. Ambil data stand berdasarkan merchant yang login
+    $stand = DB::table('stands')->where('user_id', auth()->id())->first();
 
     if (!$stand) {
-        return redirect()->back()->with('error', 'Data stand tidak ditemukan.');
+        return redirect()->back()->with('error', 'Stand tidak ditemukan.');
     }
 
-    // Tentukan status barunya (Kalau open jadi close, kalau close jadi open)
-    $statusBaru = ($stand->status === 'open') ? 'close' : 'open';
+    // 2. KOREKSI TOTAL: Karena DB maunya integer, kita cek pakai angka!
+    // Jika nilai kolom status saat ini adalah 1 (buka), maka ubah jadi 0 (tutup). Jika tidak, jadikan 1.
+    $newStatus = ($stand->status == 1) ? 0 : 1; 
 
-    // Update statusnya ke kolom 'status' yang baru kita buat di DBeaver tadi
-    DB::table('stands')->where('id', $stand->id)->update([
-        'status' => $statusBaru,
-        'updated_at' => now()
-    ]);
+    // 3. Update ke database menggunakan nilai angka murni (tanpa string 'open'/'close')
+    DB::table('stands')
+        ->where('user_id', auth()->id())
+        ->update([
+            'status' => $newStatus, // 🟢 Mengirim angka 1 atau 0 langsung kesukaan MariaDB
+            'updated_at' => now()
+        ]); 
 
-    $pesan = ($statusBaru === 'open') ? 'Stand berhasil DIBUKA!' : 'Stand berhasil DITUTUP!';
-    return redirect()->back()->with('success', $pesan);
+    return redirect()->back()->with('success', 'Status toko berhasil diperbarui!');
 }
 
     /**
@@ -234,5 +236,31 @@ class MenuController extends Controller
     $menus = DB::table('menus')->where('stand_id', $stand->id)->get();
 
     return view('merchant.menu', compact('stand', 'menus'));
+}
+
+public function checkNewOrders()
+{
+    // 1. Ambil ID stand milik user penjual yang sedang login saat ini
+    // (Sesuaikan dengan cara kamu menyimpan relasi user ke stand, misal auth()->user()->stand->id)
+    $standId = Auth::user()->stand_id; 
+
+    if (!$standId) {
+        return response()->json([
+            'adaPesananBaru' => false,
+            'jumlahPesanan' => 0
+        ]);
+    }
+
+    // 2. Hitung jumlah pesanan aktif yang statusnya masih 'pending' atau 'masuk'
+    // dan belum diproses/dimasak oleh si abang kantin
+    $newOrdersCount = Order::where('stand_id', $standId)
+                            ->whereIn('status', ['pending', 'masuk']) 
+                            ->count();
+
+    // 3. Lempar datanya dalam bentuk format JSON ke JavaScript AJAX di depan
+    return response()->json([
+        'adaPesananBaru' => $newOrdersCount > 0,
+        'jumlahPesanan' => $newOrdersCount
+    ]);
 }
 }

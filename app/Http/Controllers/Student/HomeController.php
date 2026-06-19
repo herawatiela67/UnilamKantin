@@ -16,29 +16,55 @@ use Illuminate\Support\Facades\Session;
 
 class HomeController extends Controller
 {
-   public function index()
-{
-    // 1. KODE ASLI KAMU (Jangan diganggu gugat)
-    $menus = \App\Models\Menu::where('status', 'available')->get();
-    
-    // Ambil data stands untuk dashboard mahasiswa (ini yang bikin eror karena sebelumnya hilang)
-    $stands = \App\Models\Stand::all(); 
+  public function index()
+    {
+        // 1. DATA ASLI KAMU: Ambil semua menu yang tersedia
+        $menus = \App\Models\Menu::where('status', 'available')->get();
+        
+        // 2. KOREKSI RATING & POPULARITAS: Ambil data stands dinamis (Urut paling laku)
+        $stands = \App\Models\Stand::leftJoin('orders', function($join) {
+        $join->on('stands.id', '=', 'orders.stand_id')
+             ->where('orders.status', '=', 'selesai');
+            })
+            ->select(
+                'stands.id',
+                'stands.stand_name',
+                'stands.stand_number',
+                'stands.image',       // 🟢 Sekarang aman dipanggil!
+                'stands.description', // 🟢 Sekarang aman dipanggil!
+                'stands.status',
+                DB::raw('(SELECT COUNT(*) FROM orders WHERE orders.stand_id = stands.id AND orders.status IN ("masuk", "dimasak")) as orders_count'),
+                DB::raw('COUNT(orders.id) as total_terjual')
+            )
+            ->groupBy('stands.id', 'stands.stand_name', 'stands.stand_number', 'stands.image', 'stands.description', 'stands.status')
+            ->orderBy('total_terjual', 'desc')
+            ->get();
 
-    // 2. KONEKSI TAMBAHAN BARU (Hanya menyisipkan tracking tanpa mengubah yang di atas)
-    $activeOrders = \App\Models\Order::with(['stand', 'orderDetails.menu'])
-        ->where('user_id', Auth::id())
-        ->whereIn('status', ['diterima', 'dimasak', 'siap diambil'])
-        ->orderBy('created_at', 'desc')
-        ->get();
+        // 4. DATA ASLI KAMU: Ambil data tracking pesanan aktif milik mahasiswa
+        $activeOrders = \App\Models\Order::with(['stand', 'orderDetails.menu'])
+            ->where('user_id', Auth::id())
+            ->whereIn('status', ['diterima', 'dimasak', 'siap diambil'])
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-    // Mengelompokkan order berdasarkan waktu checkout yang sama
-    $groupedOrders = $activeOrders->groupBy(function ($order) {
-        return $order->created_at->format('Y-m-d H:i:s'); 
-    });
+        $menuTerbaru = DB::table('menus')
+            ->join('stands', 'stands.id', '=', 'menus.stand_id')
+            ->select('menus.name as menu_name', 'stands.stand_name', 'menus.price', 'menus.created_at')
+            ->select('menus.id as menu_id', 'menus.name as menu_name', 'stands.id as stand_id', 'stands.stand_name', 'menus.price', 'menus.created_at')
+            // 🟢 MANTRA BARU: Hanya ambil menu yang dibuat dalam 20 menit terakhir dari waktu sekarang
+            ->where('menus.created_at', '>=', now()->subMinutes(20))
+            ->orderBy('menus.created_at', 'desc')
+            ->first();
 
-    // 3. LEMPAR SEMUA VARIABEL (Variabel lama milikmu + variabel baru)
-    return view('student.home', compact('menus', 'stands', 'groupedOrders'));
-}
+        // Mengelompokkan order berdasarkan waktu checkout yang sama
+        $groupedOrders = $activeOrders->groupBy(function ($order) {
+            return $order->created_at->format('Y-m-d H:i:s'); 
+        });
+
+        // 5. LEMPAR SEMUA VARIABEL KE VIEW STUDENT (Gabungan Fitur Lama + Baru)
+        return view('student.home', compact('menus', 'stands', 'menuTerbaru', 'groupedOrders'));
+    }
+
 
    public function showStand($id)
     {
@@ -143,8 +169,8 @@ public function checkout(Request $request)
         'stand_id' => $standId,
         'total_price' => $totalPrice,
         'status' => 'pending', // Status awal langsung set pending
-        'payment_method' => $request->input('payment_method', 'TUNAI'),
-    ]);
+        'payment_method' => 'e-wallet', // 🟢 Pastikan teks ini sama persis dengan opsi ENUM di DB kamu!
+        ]);
 
     // 5. 🟢 KUNCI UTAMA: LOOPING UNTUK MENGISI TABEL ORDER_DETAILS
     foreach ($cartItems as $item) {

@@ -3,17 +3,20 @@
 <div class="fixed bottom-0 max-w-md w-full bg-white border-t border-gray-100 shadow-lg z-50 left-0 right-0 mx-auto">
     <nav class="grid grid-cols-4 w-full h-16 bg-white">
         
-        <a href="{{ route('student.home') }}" class="flex flex-col items-center justify-center text-gray-400 hover:text-orange-500 transition">
+        <a href="{{ route('student.home') }}" 
+           class="flex flex-col items-center justify-center transition {{ isset($active) && $active == 'home' ? 'text-orange-500 font-bold' : 'text-gray-400 hover:text-orange-500' }}">
             <i class="fa-solid fa-house text-xl"></i>
             <span class="text-[10px] font-medium mt-1">Home</span>
         </a>
 
-        <a href="{{ route('orders.index') }}" class="flex flex-col items-center justify-center text-gray-400 hover:text-orange-500 transition">
+        <a href="{{ route('orders.index') }}" 
+           class="flex flex-col items-center justify-center transition {{ isset($active) && $active == 'orders' ? 'text-orange-500 font-bold' : 'text-gray-400 hover:text-orange-500' }}">
             <i class="fa-regular fa-clipboard text-xl"></i>
             <span class="text-[10px] font-medium mt-1">Orders</span>
         </a>
 
-        <a href="{{ route('student.cart') }}" class="relative flex flex-col items-center justify-center text-gray-700 hover:text-orange-500 transition">
+        <a href="{{ route('student.cart') }}" 
+           class="relative flex flex-col items-center justify-center transition {{ isset($active) && $active == 'cart' ? 'text-orange-500 font-bold' : 'text-gray-400 hover:text-orange-500' }}">
             <div class="relative p-1 inline-flex items-center justify-center">
                 <i class="fa-solid fa-cart-shopping text-xl"></i>
                 
@@ -34,7 +37,8 @@
             <span class="text-[10px] font-medium mt-1">Cart</span>
         </a>
 
-        <a href="{{ route('student.profile') }}" class="flex flex-col items-center justify-center {{ isset($active) && $active == 'profile' ? 'text-orange-500 font-black' : 'text-gray-400 hover:text-orange-500' }} transition">
+        <a href="{{ route('student.profile') }}" 
+           class="flex flex-col items-center justify-center transition {{ isset($active) && $active == 'profile' ? 'text-orange-500 font-bold' : 'text-gray-400 hover:text-orange-500' }}">
             <i class="fa-solid fa-user text-xl"></i>
             <span class="text-[10px] font-medium mt-1">Profile</span>
          </a>

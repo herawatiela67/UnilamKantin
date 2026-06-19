@@ -18,6 +18,7 @@ return new class extends Migration
             $table->integer('total_price');
             //status awal pesanan kita set default pending
             $table->string('status')->default('pending');
+            $table->string('payment_method');
             $table->timestamps();
         });
     }

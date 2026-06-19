@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Student\HomeController;
 use App\Http\Controllers\AuthController; 
 use App\Http\Controllers\MerchantOrderController;
+use App\Http\Controllers\MenuController;
 
 // Rute Root (Halaman Utama murni) -> Otomatis lempar ke login
 Route::get('/', function () {
@@ -25,52 +26,44 @@ Route::post('/register', [AuthController::class, 'register'])->name('register.su
 Route::get('/merchant/login', [AuthController::class, 'showMerchantLoginForm'])->name('merchant.login');
 Route::post('/merchant/login', [AuthController::class, 'merchantLogin'])->name('merchant.login.submit');
 
+// Proses Logout Web (Berlaku untuk semua User yang sudah login)
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
+
 // ----------------------------------------------------
 // GERBANG AKSES TERKUNCI (Wajib Login Dulu)
 // ----------------------------------------------------
 Route::middleware(['auth'])->group(function () {
     
-    // --- AKUN MAHASISWA / SISWA ---
-    // Halaman Utama Siswa
-    Route::get('/home', [HomeController::class, 'index'])->name('student.home');
-    Route::get('/profile', [HomeController::class, 'profileStudent'])->name('student.profile');
-    
-    // Halaman Detail Stan 
-    Route::get('/stand/{id}', [HomeController::class, 'showStand'])->name('student.stand.detail');
+    // 🛡️ BLOCKADE 1: KHUSUS MAHASISWA
+    Route::middleware(['can:access-student'])->group(function () {
+        Route::get('/home', [HomeController::class, 'index'])->name('student.home');
+        Route::get('/profile', [HomeController::class, 'profileStudent'])->name('student.profile');
+        Route::get('/stand/{id}', [HomeController::class, 'showStand'])->name('student.stand.detail');
+        Route::get('/cart', [HomeController::class, 'cart'])->name('student.cart');
+        Route::post('/cart/add/{menuId}', [HomeController::class, 'addToCart'])->name('student.cart.add');
+        Route::post('/cart/remove/{id}', [HomeController::class, 'removeFromCart'])->name('student.cart.remove');
+        Route::post('/checkout', [HomeController::class, 'checkout'])->name('student.checkout');
+        Route::get('/student/track/{id}', [HomeController::class, 'trackOrder'])->name('student.order.track');
+        Route::get('/orders', [HomeController::class, 'ordersHistory'])->name('orders.index');
+    });
 
-    // Fitur Keranjang Belanja (Cart)
-    Route::get('/cart', [HomeController::class, 'cart'])->name('student.cart');
-    Route::post('/cart/add/{menuId}', [HomeController::class, 'addToCart'])->name('student.cart.add');
-    Route::post('/cart/remove/{id}', [HomeController::class, 'removeFromCart'])->name('student.cart.remove');
-    
-    // Proses Checkout Kirim ke DB
-    Route::post('/checkout', [HomeController::class, 'checkout'])->name('student.checkout');
-    // Rute untuk melacak status pesanan tertentu secara detail (Sisi Mahasiswa)
-    Route::get('/student/track/{id}', [HomeController::class, 'trackOrder'])->name('student.order.track');
-    Route::get('/orders', [HomeController::class, 'ordersHistory'])->name('orders.index');
+    // 🛡️ BLOCKADE 2: KHUSUS PEDAGANG (STAND)
+    Route::middleware(['can:access-merchant'])->group(function () {
+        Route::get('/merchant/home', [\App\Http\Controllers\MenuController::class, 'indexMerchant'])->name('merchant.home');
+        Route::get('/merchant/menus', [\App\Http\Controllers\MenuController::class, 'listMenusMerchant'])->name('merchant.menu.index');
+        Route::get('/merchant/menu/create', [\App\Http\Controllers\MenuController::class, 'create'])->name('merchant.menu.create');
+        Route::post('/merchant/menu/store', [\App\Http\Controllers\MenuController::class, 'store'])->name('merchant.menu.store');
+        Route::get('/merchant/menu/{id}/edit', [\App\Http\Controllers\MenuController::class, 'edit'])->name('merchant.menu.edit');
+        Route::put('/merchant/menu/{id}/update', [\App\Http\Controllers\MenuController::class, 'update'])->name('merchant.menu.update');
+        Route::post('/merchant/menu/toggle/{id}', [\App\Http\Controllers\MenuController::class, 'toggleStatus'])->name('merchant.menu.toggle');
+        Route::delete('/merchant/menu/delete/{id}', [\App\Http\Controllers\MenuController::class, 'destroy'])->name('merchant.menu.delete');
+        Route::get('/merchant/orders', [MerchantOrderController::class, 'index'])->name('merchant.orders.index');
+        Route::post('/orders/{id}/update-status', [MerchantOrderController::class, 'updateStatus'])->name('orders.updateStatus');
+        Route::post('/merchant/stand/toggle', [\App\Http\Controllers\MenuController::class, 'toggleStandStatus'])->name('merchant.stand.toggleStatus');
+        // Pastikan taruh di dalam middleware auth milik akun Stand ya, El!
+Route::get('/merchant/check-new-orders', [App\Http\Controllers\MenuController::class, 'checkNewOrders'])->name('merchant.check.new.orders');
+    });
 
-
-   /// --- AKUN STAND / MERCHANT ---
-    // Halaman Utama Dashboard Pedagang
-    Route::get('/merchant/home', [\App\Http\Controllers\MenuController::class, 'indexMerchant'])->name('merchant.home');
-    Route::get('/merchant/menus', [\App\Http\Controllers\MenuController::class, 'listMenusMerchant'])->name('merchant.menu.index');
-    // Fitur Tambah Menu Baru (Create)
-    Route::get('/merchant/menu/create', [\App\Http\Controllers\MenuController::class, 'create'])->name('merchant.menu.create');
-    Route::post('/merchant/menu/store', [\App\Http\Controllers\MenuController::class, 'store'])->name('merchant.menu.store');
-    
-    // Fitur Edit Menu (Update - Mengikuti Alur Dinamis Flutter)
-    Route::get('/merchant/menu/{id}/edit', [\App\Http\Controllers\MenuController::class, 'edit'])->name('merchant.menu.edit');
-    Route::put('/merchant/menu/{id}/update', [\App\Http\Controllers\MenuController::class, 'update'])->name('merchant.menu.update');
-    
-    // Fitur Cepat Ubah Status & Hapus Menu Web
-    Route::post('/merchant/menu/toggle/{id}', [\App\Http\Controllers\MenuController::class, 'toggleStatus'])->name('merchant.menu.toggle');
-    Route::delete('/merchant/menu/delete/{id}', [\App\Http\Controllers\MenuController::class, 'destroy'])->name('merchant.menu.delete');
-    // Proses Logout Web (Berlaku untuk semua User)
+    // Proses Logout Web
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-    
-    // Jalur milik pedagang (Ubah bagian ->name()-nya saja)
-    Route::get('/merchant/orders', [MerchantOrderController::class, 'index'])->name('merchant.orders.index');
-    Route::post('/orders/{id}/update-status', [MerchantOrderController::class, 'updateStatus'])->name('orders.updateStatus');
-    // Rute untuk mengubah status Buka/Tutup Stand
-    Route::post('/merchant/stand/toggle', [\App\Http\Controllers\MenuController::class, 'toggleStandStatus'])->name('merchant.stand.toggleStatus');
 });

@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Pesanan Stand - UnilamKantin</title>
     <script src="https://cdn.tailwindcss.com"></script>
+<audio id="notifAlarm" loop>
+    <source src="https://assets.mixkit.co/active_storage/sfx/911/911-84.wav" type="audio/wav">
+    <source src="https://www.soundjay.com/buttons/sounds/beep-06.mp3" type="audio/mp3">
+</audio>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style> body { font-family: 'Plus Jakarta Sans', sans-serif; } </style>
@@ -24,7 +28,7 @@
                 </button>
             </form>
         </div>
-
+   
         <div class="bg-white/10 p-3.5 rounded-2xl flex items-center justify-between border border-white/10">
             <div class="flex items-center gap-3">
                 <i class="fa-solid fa-store text-2xl text-amber-400"></i>
@@ -33,19 +37,17 @@
                     <p class="text-[11px] opacity-80">Stand: {{ $stand->stand_number ?? '-' }}</p>
                 </div>
             </div>
-            
+    
             <form action="{{ route('merchant.stand.toggleStatus') }}" method="POST" class="inline">
                 @csrf
                 <button type="submit" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition duration-200 cursor-pointer shadow-sm
-                    {{ ($stand->status ?? 'open') === 'open' ? 'bg-emerald-500 text-white hover:bg-emerald-600' : 'bg-gray-400 text-white hover:bg-gray-500' }}">
-                    <i class="fa-solid {{ ($stand->status ?? 'open') === 'open' ? 'fa-circle-check' : 'fa-circle-xmark' }}"></i>
-                    <span>{{ ($stand->status ?? 'open') === 'open' ? 'Buka' : 'Tutup' }}</span>
+                    {{ $stand->status == 1 ? 'bg-emerald-500 text-white hover:bg-emerald-600' : 'bg-gray-400 text-white hover:bg-gray-500' }}">
+                    <i class="fa-solid {{ $stand->status == 1 ? 'fa-circle-check' : 'fa-circle-xmark' }}"></i>
+                    <span>{{ $stand->status == 1 ? 'Buka' : 'Tutup' }}</span>
                 </button>
             </form>
         </div>
-        
-        </div>
-
+ </div>
     @if(session('success'))
         <div class="m-4 bg-green-50 text-green-600 p-3.5 rounded-xl text-xs font-bold border border-green-100 flex items-center gap-2">
             <i class="fa-solid fa-circle-check"></i>
@@ -122,6 +124,48 @@
             activeSubBtn.classList.add('bg-white', 'text-gray-800', 'shadow-sm');
             activeSubBtn.classList.remove('text-gray-500');
         }
+
+        let alarm = document.getElementById('notifAlarm');
+        let alarmMuted = false;
+
+        if (alarm) {
+            alarm.volume = 1.0; // Paksa volume maksimal suara laptop
+        }
+
+        function cekPesananMasuk() {
+            fetch("{{ route('merchant.check.new.orders') }}")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.adaPesananBaru) {
+                        // Bunyikan alarm sirene jika belum di-mute sementara
+                        if (!alarmMuted) {
+                            if (alarm) {
+                                alarm.play().catch(err => console.log("Menunggu interaksi pertama klik..."));
+                            }
+                        }
+                        
+                        // Opsional: Tampilkan alert/notif teks jumlah pesanan di layar dashboard
+                        console.log("📢 Ada " + data.jumlahPesanan + " pesanan masuk, El! Segera masak!");
+                    } else {
+                        // Kalau semua pesanan berstatus pending/masuk sudah diklik "Terima" atau "Dimasak"
+                        // Maka matikan alarm secara otomatis agar tidak bising lagi
+                        if (alarm) {
+                            alarm.pause();
+                            alarm.currentTime = 0;
+                        }
+                        alarmMuted = false; // Reset status mute untuk pesanan berikutnya nanti
+                    }
+                })
+                .catch(error => console.error('Gagal memuat status pesanan:', error));
+        }
+
+        // Cek otomatis setiap 10 detik non-stop
+        setInterval(cekPesananMasuk, 10000);
+
+        // Pancingan klik pertama agar browser mengizinkan keluar suara
+        document.addEventListener('click', function() {
+            console.log("Sistem audio stand diaktifkan!");
+        }, { once: true });
     </script>
 </body>
 </html>
