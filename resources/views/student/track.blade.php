@@ -109,26 +109,26 @@
 
             <hr class="border-gray-100 my-2">
 
-            <div class="space-y-2 text-xs">
-                <div class="flex justify-between text-gray-500">
-                    <span>Metode Pembayaran</span>
-                    <span class="font-bold text-gray-700 uppercase">
-                        @if($order->payment_method === 'cash')
-                            <i class="fa-solid fa-money-bill-wave text-green-500 mr-0.5"></i> Cash di Tempat
-                        @else
-                            <i class="fa-solid fa-credit-card text-blue-500 mr-0.5"></i> E-Wallet ({{ strtoupper($order->payment_channel ?? 'Digital') }})
-                        @endif
-                    </span>
-                </div>
-                <div class="flex justify-between text-gray-500">
-                    <span>Biaya Layanan</span>
-                    <span class="text-green-600 font-bold">Gratis</span>
-                </div>
-                <div class="flex justify-between font-black text-sm text-gray-900 pt-2 border-t border-gray-50">
-                    <span>Total Bayar</span>
-                    <span class="text-orange-500 text-base font-black">Rp{{ number_format($order->total_price ?? 0, 0, ',', '.') }}</span>
-                </div>
-            </div>
+           <div class="space-y-2 text-xs">
+    <div class="flex justify-between text-gray-500">
+        <span>Metode Pembayaran</span>
+        <span class="font-bold text-gray-700 uppercase">
+            @if(strtolower($order->payment_method ?? '') == 'cash')
+                <i class="fa-solid fa-money-bill-wave text-green-500 mr-0.5"></i> Cash di Tempat
+            @else
+                <i class="fa-solid fa-credit-card text-blue-500 mr-0.5"></i> E-Wallet ({{ strtoupper($order->payment_channel ?? 'Digital') }})
+            @endif
+        </span>
+    </div>
+    <div class="flex justify-between text-gray-500">
+        <span>Biaya Layanan</span>
+        <span class="text-green-600 font-bold">Gratis</span>
+    </div>
+    <div class="flex justify-between font-black text-sm text-gray-900 pt-2 border-t border-gray-50">
+        <span>Total Bayar</span>
+        <span class="text-orange-500 text-base font-black">Rp{{ number_format($order->total_price ?? 0, 0, ',', '.') }}</span>
+    </div>
+</div>
         </div>
 
     </main>
@@ -137,3 +137,4 @@
 
 </body>
 </html>
+

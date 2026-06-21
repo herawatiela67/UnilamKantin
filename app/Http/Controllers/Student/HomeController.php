@@ -190,52 +190,7 @@ public function addToCart(Request $request, $menuId)
     }
 
 
-// 4. Proses Checkout Kirim ke Database
-public function checkout(Request $request)
-{
-    
-    // 1. Ambil data keranjang belanja mahasiswa yang sedang login
-    // (Sesuaikan dengan cara kamu menyimpan cart, misal dari database tabel 'carts' atau session)
-    $cartItems = \App\Models\Cart::where('user_id', auth()->id())->get(); 
 
-    if ($cartItems->isEmpty()) {
-        return redirect()->back()->with('error', 'Keranjang belanja kamu masih kosong!');
-    }
-
-    // 2. Ambil stan_id dari salah satu item di keranjang (karena checkout per stan)
-    $firstItem = $cartItems->first();
-    $standId = $firstItem->menu->stand_id; 
-
-    // 3. Hitung total harga seluruh belanjaan di keranjang
-    $totalPrice = $cartItems->sum(function($item) {
-        return $item->menu->price * $item->quantity;
-    });
-
-    // 4. SIMPAN KE TABEL ORDERS (Induk Pesanan)
-    $order = \App\Models\Order::create([
-        'user_id' => auth()->id(),
-        'stand_id' => $standId,
-        'total_price' => $totalPrice,
-        'status' => 'pending', // Status awal langsung set pending
-        'payment_method' => 'e-wallet', // 🟢 Pastikan teks ini sama persis dengan opsi ENUM di DB kamu!
-        ]);
-
-    // 5. 🟢 KUNCI UTAMA: LOOPING UNTUK MENGISI TABEL ORDER_DETAILS
-    foreach ($cartItems as $item) {
-        \App\Models\OrderDetail::create([
-            'order_id' => $order->id, // Hubungkan dengan ID Order yang baru dibuat di atas
-            'menu_id' => $item->menu_id,
-            'quantity' => $item->quantity,
-            'price' => $item->menu->price, // Kunci harga saat dibeli (jika nanti harga menu berubah)
-        ]);
-    }
-
-    // 6. Bersihkan keranjang belanja mahasiswa setelah sukses checkout
-    \App\Models\Cart::where('user_id', auth()->id())->delete();
-
-    // 7. Oper mahasiswa ke halaman tracking pesanan yang barusan dibuat
-    return redirect()->route('student.order.track', $order->id)->with('success', 'Pesanan berhasil dikirim ke kantin!');
-}
   public function trackOrder($id)
 {
     // 1. Ambil data order utama yang diklik oleh mahasiswa

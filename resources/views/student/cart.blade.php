@@ -36,7 +36,6 @@
             </div>
         @else
             @php
-                // 🟢 PERBAIKAN 2: Kelompokkan menu berdasarkan nama Stan Kuliner lewat relasi database
                 $groupedCart = [];
                 foreach($cartItems as $item) {
                     $standName = optional(optional($item->menu)->stand)->stand_name ?? 'Stan Kuliner'; 
@@ -55,7 +54,6 @@
                         <div class="space-y-2.5">
                             @foreach($items as $item)
                                 @php
-                                    // Mengambil gambar menu dengan aman melalui objek database
                                     $menuImage = optional($item->menu)->image;
                                     $menuImg = $menuImage ? (str_contains($menuImage, 'http') ? $menuImage : asset($menuImage)) : 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=100';
                                 @endphp
@@ -116,7 +114,7 @@
                                 <p class="text-[10px] text-gray-400">DANA, OVO, BCA, Mandiri, dll.</p>
                             </div>
                         </div>
-                        <input type="radio" name="payment_method" value="ewallet" onclick="togglePaymentChannels(true)" class="w-4 h-4 text-orange-500 border-gray-300 focus:ring-orange-500 accent-orange-500">
+                        <input type="radio" name="payment_method" value="cashless" onclick="togglePaymentChannels(true)" class="w-4 h-4 text-orange-500 border-gray-300 focus:ring-orange-500 accent-orange-500">
                     </label>
 
                     <div id="digital-channels" class="hidden pt-2 space-y-2 border-t border-dashed border-gray-200 transition duration-300">
@@ -168,7 +166,7 @@
                 </div>
 
                 <div class="fixed bottom-16 max-w-md w-full bg-white border-t border-gray-100 p-4 left-0 right-0 mx-auto z-50 shadow-2xl">
-                    <button type="submit" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-center py-3 rounded-xl shadow-lg transition tracking-wide text-sm flex items-center justify-center gap-2 transform active:scale-98 cursor-pointer">
+                    <button type="submit" id="btn-submit" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-center py-3 rounded-xl shadow-lg transition tracking-wide text-sm flex items-center justify-center gap-2 transform active:scale-98 cursor-pointer">
                         <i class="fa-solid fa-receipt"></i> Pesan Sekarang
                     </button>
                 </div>
@@ -176,8 +174,10 @@
         @endif
     </main>
 
-<x-navbar-student active="cart" />
+    <x-navbar-student active="cart" />
+
     <script>
+        // 1. Fungsi penampil sub-channel digital
         function togglePaymentChannels(show) {
             const container = document.getElementById('digital-channels');
             if (show) {
@@ -186,6 +186,48 @@
                 container.classList.add('hidden');
             }
         }
+
+        // 2. 🔥 KUNCI UTAMA: Ambil submit form lewat Fetch API agar menangkap respon JSON
+        document.getElementById('form-checkout').addEventListener('submit', function(e) {
+            e.preventDefault(); // Mengunci agar browser tidak refresh otomatis
+
+            const btnSubmit = document.getElementById('btn-submit');
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Memproses...';
+
+            // Kumpulkan data input form secara dinamis
+            const formData = new FormData(this);
+
+            fetch(this.action, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.status === 'success') {
+                    // JALUR A: Jika Cashless (Midtrans mengembalikan redirect URL)
+                    if (result.redirect_url) {
+                        window.location.href = result.redirect_url;
+                    } else {
+                        // JALUR B: Jika Cash Tunai (Langsung pindah ke halaman tracking berdasarkan id pesanan)
+                        window.location.href = "/student/track/" + result.data.id;
+                    }
+                } else {
+                    alert("Error: " + result.message);
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerHTML = '<i class="fa-solid fa-receipt"></i> Pesan Sekarang';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("Terjadi masalah koneksi ke server.");
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = '<i class="fa-solid fa-receipt"></i> Pesan Sekarang';
+            });
+        });
     </script>
 </body>
 </html>

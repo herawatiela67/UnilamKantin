@@ -80,7 +80,7 @@ class MenuController extends Controller
     {
         $request->validate([
             'name'        => 'required|string|max:255',
-            'price'       => 'required|numeric|min:100',
+            'price'       => 'required|numeric',
             'status'      => 'required|in:available,unavailable',
             'description' => 'nullable|string', 
             'image'       => 'nullable|image|mimes:jpeg,png,jpg|max:2048', 

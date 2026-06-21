@@ -5,6 +5,8 @@ use App\Http\Controllers\Student\HomeController;
 use App\Http\Controllers\AuthController; 
 use App\Http\Controllers\MerchantOrderController;
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\OrderController;
+
 
 // Rute Root (Halaman Utama murni) -> Otomatis lempar ke login
 Route::get('/', function () {
@@ -42,7 +44,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/cart', [HomeController::class, 'cart'])->name('student.cart');
         Route::post('/cart/add/{menuId}', [HomeController::class, 'addToCart'])->name('student.cart.add');
         Route::post('/cart/remove/{id}', [HomeController::class, 'removeFromCart'])->name('student.cart.remove');
-        Route::post('/checkout', [HomeController::class, 'checkout'])->name('student.checkout');
+        Route::post('/checkout', [OrderController::class, 'store'])->name('student.checkout');
         Route::get('/student/track/{id}', [HomeController::class, 'trackOrder'])->name('student.order.track');
         Route::get('/orders', [HomeController::class, 'ordersHistory'])->name('orders.index');
         Route::get('/student/notifications', [App\Http\Controllers\Student\HomeController::class, 'notificationPage'])->name('student.notifications');
