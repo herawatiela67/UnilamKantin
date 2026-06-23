@@ -6,6 +6,8 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MerchantOrderController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\Admin\StandManagerController;
+
 
 
 // Rute Root (Halaman Utama murni) -> Otomatis lempar ke login
@@ -28,8 +30,9 @@ Route::post('/register', [AuthController::class, 'register'])->name('register.su
 Route::get('/merchant/login', [AuthController::class, 'showMerchantLoginForm'])->name('merchant.login');
 Route::post('/merchant/login', [AuthController::class, 'merchantLogin'])->name('merchant.login.submit');
 
-// Proses Logout Web (Berlaku untuk semua User yang sudah login)
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
+// --- LOGIN KHUSUS ADMIN ---
+Route::get('/admin/login', [AuthController::class, 'showAdminLoginForm'])->name('admin.login');
+Route::post('/admin/login', [AuthController::class, 'adminLogin'])->name('admin.login.submit');
 
 // ----------------------------------------------------
 // GERBANG AKSES TERKUNCI (Wajib Login Dulu)
@@ -67,6 +70,18 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/merchant/order/{id}/update', [MerchantOrderController::class, 'updateStatus'])->name('merchant.order.update-status');
     });
 
+    Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+    
+    // Route CRUD Stan Kuliner
+        Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('/stands', [StandManagerController::class, 'index'])->name('stands.index');
+        Route::get('/stands/create', [StandManagerController::class, 'create'])->name('stands.create');
+        Route::post('/stands', [StandManagerController::class, 'store'])->name('stands.store');
+        Route::post('/admin/logout', [AuthController::class, 'adminLogout'])->name('admin.logout');
+    });
+
     // Proses Logout Web
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
+});
+

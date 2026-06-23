@@ -21,7 +21,7 @@
                 <div class="p-3">
                     <h3 class="font-bold text-sm text-gray-900 truncate">{{ $stand->stand_name }}</h3>
                     <p class="text-xs text-gray-400 mt-0.5 truncate">
-                        {{ $stand->description ?? 'Lapak Nomor ' . ($stand->stand_number ?? '-') }}
+                        {{ $stand->description ??  ($stand->stand_number ?? '-') }}
                     </p>
                     
                     <div class="flex items-center justify-between mt-3 pt-2 border-t border-gray-50">

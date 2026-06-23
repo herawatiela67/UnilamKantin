@@ -19,7 +19,7 @@ return new class extends Migration
             
             $table->string('stand_name');
             $table->string('stand_number');
-            $table->string('image')->nullable()->comment('Menyimpan nama file foto/banner stand');
+            $table->string('image')->nullable()->after('stand_number');
             $table->text('description')->nullable()->comment('Deskripsi singkat mengenai stan jualan');
             
             $table->boolean('status')->default(true); 

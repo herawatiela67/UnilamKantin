@@ -6,12 +6,44 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Gate;
 use App\Models\User;
 use App\Models\Menu;
 use App\Models\Stand;
 
 class AuthController extends Controller
 {
+
+public function showAdminLoginForm()
+{
+    return view('auth.admin-login'); // Kita akan buat file view ini
+}
+
+/**
+ * Memproses Data Login Admin
+ */
+public function adminLogin(Request $request)
+{
+    $credentials = $request->validate([
+        'email' => 'required|email',
+        'password' => 'required|string',
+    ]);
+
+    if (Auth::attempt($credentials)) {
+        $request->session()->regenerate();
+        
+        // Cek apakah benar dia admin sebelum dikasih masuk
+        if (Gate::allows('access-admin') || Auth::user()->role === 'admin') {
+      return redirect()->route('admin.stands.index');
+        }
+
+        // Kalau bukan admin tapi maksa login disini, usir logout!
+        Auth::logout();
+        return back()->withErrors(['email' => 'Anda tidak memiliki akses sebagai Administrator.']);
+    }
+
+    return back()->withErrors(['email' => 'Email atau password Admin salah.']);
+}
     // 1. Tampilkan Halaman Login Blade yang Kemarin
     public function showLoginForm()
     {
@@ -20,6 +52,15 @@ class AuthController extends Controller
         }
         return view('auth.login');
     }
+
+    public function adminLogout(Request $request)
+{
+    Auth::logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+
+    return redirect()->route('admin.login')->with('success', 'Berhasil keluar dari sistem Admin.');
+}
 
     // 2. Eksekusi Proses Login Tanpa Token (Menggunakan Session)
   public function login(Request $request)
