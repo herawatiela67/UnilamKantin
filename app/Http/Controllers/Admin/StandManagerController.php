@@ -38,10 +38,9 @@ class StandManagerController extends Controller
             'owner_name'   => 'required|string|max:255',
             'owner_email'  => 'required|email|unique:users,email', // Email gak boleh kembar di DB
             'owner_password' => 'required|string|min:6',
-
-            // Validasi untuk Stan Baru
             'stand_name'   => 'required|string|max:255',
             'stand_number' => 'required|string|max:50',
+            'category'     => 'required|in:makanan,cemilan,minuman', 
             'description'  => 'nullable|string',
             'image'        => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
@@ -66,6 +65,7 @@ class StandManagerController extends Controller
             'stand_name'   => $request->stand_name,
             'stand_number' => $request->stand_number,
             'description'  => $request->description,
+            'category'     => $request->category,
             'image'        => $imagePath,
             'status'       => true,
         ]);

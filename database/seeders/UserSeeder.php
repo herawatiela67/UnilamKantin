@@ -52,7 +52,7 @@ class UserSeeder extends Seeder
             'name' => 'Ela Herawati',
             'email' => 'ela@mahasiswa.com',
             'password' => Hash::make('password123'),
-            'role' => 'customer',
+            'role' => 'admin',
         ]);
 
         {

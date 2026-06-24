@@ -8,11 +8,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Stand extends Model
 {
     // Daftarkan kolom yang boleh diisi (Mass Assignment)
-    protected $fillable = ['user_id',
+    protected $fillable = [
+     'user_id',
      'stand_name', 
      'stand_number',
      'image',
      'description', 
+     'category',
      'status'
     
      ];

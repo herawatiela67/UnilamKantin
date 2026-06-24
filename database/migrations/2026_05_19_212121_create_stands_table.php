@@ -13,15 +13,12 @@ return new class extends Migration
     {
         Schema::create('stands', function (Blueprint $table) {
             $table->id();
-            // Menghubungkan ke tabel users (pedagang)
-            // Jika user dihapus maka data stan otomatis terhapus (onDelete cascade)
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');     
             $table->string('stand_name');
             $table->string('stand_number');
-            $table->string('image')->nullable()->after('stand_number');
+            $table->string('image')->nullable();
             $table->text('description')->nullable()->comment('Deskripsi singkat mengenai stan jualan');
-            
+            $table->enum('category', ['makanan', 'cemilan', 'minuman'])->default('makanan');
             $table->boolean('status')->default(true); 
             $table->timestamps();
         });

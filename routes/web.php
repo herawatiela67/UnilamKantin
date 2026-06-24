@@ -73,15 +73,15 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
     
     // Route CRUD Stan Kuliner
-        Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/stands', [StandManagerController::class, 'index'])->name('stands.index');
         Route::get('/stands/create', [StandManagerController::class, 'create'])->name('stands.create');
         Route::post('/stands', [StandManagerController::class, 'store'])->name('stands.store');
-        Route::post('/admin/logout', [AuthController::class, 'adminLogout'])->name('admin.logout');
     });
 
     // Proses Logout Web
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::post('/admin/logout', [AuthController::class, 'adminLogout'])->name('admin.logout');
+
 });
-});
+
 

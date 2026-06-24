@@ -34,10 +34,10 @@
 
     <div>
         <div class="flex gap-2 overflow-x-auto pb-1 style-scrollbar-none">
-            <button onclick="filterMenu('all', this)" class="category-btn bg-orange-500 text-white font-bold text-xs px-4 py-2 rounded-full whitespace-nowrap shadow-sm shadow-orange-500/20">Semua Menu</button>
-            <button onclick="filterMenu('makanan', this)" class="category-btn bg-white text-gray-600 font-semibold text-xs px-4 py-2 rounded-full border border-gray-100 whitespace-nowrap hover:bg-orange-50 hover:text-orange-500 transition">Makanan Berat</button>
-            <button onclick="filterMenu('cemilan', this)" class="category-btn bg-white text-gray-600 font-semibold text-xs px-4 py-2 rounded-full border border-gray-100 whitespace-nowrap hover:bg-orange-50 hover:text-orange-500 transition">Cemilan & Snack</button>
-            <button onclick="filterMenu('minuman', this)" class="category-btn bg-white text-gray-600 font-semibold text-xs px-4 py-2 rounded-full border border-gray-100 whitespace-nowrap hover:bg-orange-50 hover:text-orange-500 transition">Aneka Minuman</button>
+            <button onclick="filterStand('all', this)" class="category-btn bg-orange-500 text-white font-bold text-xs px-4 py-2 rounded-full whitespace-nowrap shadow-sm shadow-orange-500/20">Semua Stan</button>
+            <button onclick="filterStand('makanan', this)" class="category-btn bg-white text-gray-600 font-semibold text-xs px-4 py-2 rounded-full border border-gray-100 whitespace-nowrap hover:bg-orange-50 hover:text-orange-500 transition">Stan Makanan</button>
+            <button onclick="filterStand('cemilan', this)" class="category-btn bg-white text-gray-600 font-semibold text-xs px-4 py-2 rounded-full border border-gray-100 whitespace-nowrap hover:bg-orange-50 hover:text-orange-500 transition">Stan Cemilan</button>
+            <button onclick="filterStand('minuman', this)" class="category-btn bg-white text-gray-600 font-semibold text-xs px-4 py-2 rounded-full border border-gray-100 whitespace-nowrap hover:bg-orange-50 hover:text-orange-500 transition">Stan Minuman</button>
         </div>
     </div>
 
@@ -54,41 +54,61 @@
 <x-navbar-student active="home" />
 
 <script>
-    function filterMenu() {
-        document.querySelectorAll('.category-btn').forEach(btn => {
-            btn.classList.remove('bg-orange-500', 'text-white', 'font-bold', 'shadow-sm', 'shadow-orange-500/20');
-            btn.classList.add('bg-white', 'text-gray-600', 'font-semibold', 'border', 'border-gray-100');
-        });
+    // Variable global penyimpan status filter aktif
+    let currentCategory = 'all';
 
-        button.classList.remove('bg-white', 'text-gray-600', 'font-semibold', 'border', 'border-gray-100');
-        button.classList.add('bg-orange-500', 'text-white', 'font-bold', 'shadow-sm', 'shadow-orange-500/20');
+    // LOGIKA FILTER UTAMA (GABUNGAN SEARCH + BUTTON KATEGORI)
+    function jalankanFilterGabungan() {
+        const searchInput = document.getElementById('searchStandInput').value.toLowerCase();
+        const standCards = document.querySelectorAll('.stand-card');
+        let foundCount = 0;
 
-        document.querySelectorAll('.menu-item').forEach(item => {
-            const itemCategory = item.getAttribute('data-category');
-            if (category === 'all' || itemCategory === category) {
-                item.style.display = 'block';
+        standCards.forEach(card => {
+            const standName = card.getAttribute('data-name') || '';
+            const standCategory = card.getAttribute('data-category');
+
+            const cocokKategori = (currentCategory === 'all' || standCategory === currentCategory);
+            const cocokNama = standName.includes(searchInput);
+
+            if (cocokKategori && cocokNama) {
+                card.style.display = 'block'; 
+                foundCount++;
             } else {
-                item.style.display = 'none';
+                card.style.display = 'none';
             }
         });
-     }
-    function scrollToMenu() {
-        const targetMenu = document.getElementById(menuId);
-        if (targetMenu) {
-            const allButton = document.querySelector("button[onclick*='all']");
-            if (allButton) filterMenu('all', allButton);
 
-            targetMenu.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            targetMenu.classList.add('ring-4', 'ring-orange-500', 'scale-105', 'z-10');
-            
-            setTimeout(() => {
-                targetMenu.classList.remove('ring-4', 'ring-orange-500', 'scale-105', 'z-10');
-            }, 2000);
+        // Pengkondisian untuk teks notifikasi kosong
+        const noResultElement = document.getElementById('noStandFound');
+        if (noResultElement) {
+            if (foundCount === 0) {
+                noResultElement.style.display = 'block';
+            } else {
+                noResultElement.style.display = 'none';
+            }
         }
     }
-    // 4. Fungsi Acak Gacha Kuliner
-    const originalMenus = @json($menus);
 
+    // Pemicu Filter saat Tombol Kategori diklik
+    function filterStand(category, button) {
+        currentCategory = category;
+
+        const buttons = document.querySelectorAll('.category-btn');
+        buttons.forEach(btn => {
+            btn.className = "category-btn bg-white text-gray-600 font-semibold text-xs px-4 py-2 rounded-full border border-gray-100 whitespace-nowrap hover:bg-orange-50 hover:text-orange-500 transition";
+        });
+        button.className = "category-btn bg-orange-500 text-white font-bold text-xs px-4 py-2 rounded-full whitespace-nowrap shadow-sm shadow-orange-500/20";
+
+        jalankanFilterGabungan();
+    }
+
+    // Pemicu Filter saat Kolom Pencarian di-ketik
+    function filterStands() {
+        jalankanFilterGabungan();
+    }
+
+    // --- FITUR GACHA RODA KULINER BAWAAN KAMU ---
+    const originalMenus = @json($menus);
     let currentAngle = 0;
     let isSpinning = false;
 
@@ -97,11 +117,14 @@
         setTimeout(drawWheel, 100);
     }
 
+    // Fungsi penutup modal gacha
     function closeSpinnerModal() {
         if (isSpinning) return;
         document.getElementById('spinnerModal').classList.add('hidden');
         document.getElementById('gachaResult').classList.add('hidden');
     }
+
+    // Menggambar lingkar roda gacha memakai Canvas HTML5
     function drawWheel() { 
         const canvas = document.getElementById('wheelCanvas');
         if (!canvas) return;
@@ -132,8 +155,6 @@
             ctx.rotate(startAngle + sliceAngle / 2);
             ctx.fillStyle = "#ffffff";
             ctx.font = "bold 10px sans-serif";
-            ctx.shadowColor = "rgba(0, 0, 0, 0.4)";
-            ctx.shadowBlur = 4;
             
             let textName = menu.name.length > 12 ? menu.name.substr(0, 12) + '..' : menu.name;
             ctx.fillText(textName, radius / 3.5, 5);
@@ -148,7 +169,9 @@
         ctx.strokeStyle = '#F3F4F6';
         ctx.stroke();
         ctx.closePath();
-     }
+    }
+
+    // Proses memutar roda gacha secara random acak
     function spinTheWheel() {
         if (isSpinning || originalMenus.length === 0) return;
 
@@ -196,56 +219,29 @@
             }, 50);
 
         }, 5000);
-     }
-    function filterStands() {
-        const searchInput = document.getElementById('searchStandInput').value.toLowerCase();
-        const standCards = document.querySelectorAll('.stand-card');
-        let foundCount = 0;
+    }
 
-        standCards.forEach(card => {
-            const standName = card.getAttribute('data-name');
-            if (standName.includes(searchInput)) {
-                card.classList.remove('hidden');
-                foundCount++;
-            } else {
-                card.classList.add('hidden');
-            }
-        });
-
-        const noResultElement = document.getElementById('noStandFound');
-        if (foundCount === 0) {
-            noResultElement.classList.remove('hidden');
-        } else {
-            noResultElement.classList.add('hidden');
-        }
-     }
-
+    // --- LOGIKA REAL-TIME COUNT NOTIFIKASI MAHASISWA ---
     function cekNotifikasiBaru() {
-        // Tembak route penampung count notifikasi secara real-time
         fetch("{{ route('customer.check.notifications') }}")
             .then(response => response.json())
             .then(data => {
                 const badge = document.getElementById('notif-badge');
-                
-                if (data.unreadCount > 0) {
-                    // Isi angka notifikasi secara real-time
-                    badge.innerText = data.unreadCount;
-                    // Munculkan bulatan merah jika ada notifikasi aktif
-                    badge.classList.remove('hidden'); 
-                } else {
-                    // Sembunyikan bulatan jika tidak ada notifikasi (0)
-                    badge.classList.add('hidden'); 
+                if (badge) {
+                    if (data.unreadCount > 0) {
+                        badge.innerText = data.unreadCount;
+                        badge.classList.remove('hidden'); 
+                    } else {
+                        badge.classList.add('hidden'); 
+                    }
                 }
             })
             .catch(error => console.error('Gagal memuat notifikasi mahasiswa:', error));
     }
 
-    // Jalankan otomatis setiap 5 detik non-stop biar responsif, El!
+    // Interval hitung berkala per 5 detik sekali
     setInterval(cekNotifikasiBaru, 5000);
-    
-    // Jalankan sekali di awal saat halaman berhasil dimuat pertama kali
     document.addEventListener('DOMContentLoaded', cekNotifikasiBaru);
 </script>
-
 </body>
 </html>
