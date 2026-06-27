@@ -11,7 +11,7 @@
     <div class="max-w-md w-full bg-white p-8 rounded-3xl shadow-2xl">
         <div class="text-center mb-6">
             <span class="text-3xl">🛡️</span>
-            <h2 class="text-xl font-black text-gray-900 tracking-tight mt-2">KantinQuick Admin</h2>
+            <h2 class="text-xl font-black text-gray-900 tracking-tight mt-2">UnilamKantin Admin</h2>
             <p class="text-xs text-gray-400 mt-1">Silakan masuk untuk mengelola data sistem kantin</p>
         </div>
 

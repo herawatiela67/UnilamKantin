@@ -7,6 +7,10 @@ use App\Http\Controllers\MerchantOrderController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Admin\StandManagerController;
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\UserController;
+
+
 
 
 
@@ -50,6 +54,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/checkout', [OrderController::class, 'store'])->name('student.checkout');
         Route::get('/student/track/{id}', [HomeController::class, 'trackOrder'])->name('student.order.track');
         Route::get('/orders', [HomeController::class, 'ordersHistory'])->name('orders.index');
+        
         Route::get('/student/notifications', [App\Http\Controllers\Student\HomeController::class, 'notificationPage'])->name('student.notifications');
         Route::get('/student/check-notifications', [App\Http\Controllers\Student\HomeController::class, 'checkNotifications'])->name('customer.check.notifications');
     // 🛡️ BLOCKADE 2: KHUSUS PEDAGANG (STAND)
@@ -76,6 +81,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/stands', [StandManagerController::class, 'index'])->name('stands.index');
         Route::get('/stands/create', [StandManagerController::class, 'create'])->name('stands.create');
         Route::post('/stands', [StandManagerController::class, 'store'])->name('stands.store');
+        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/stands', [StandManagerController::class, 'index'])->name('stands.index');
+        Route::get('/users', [UserController::class, 'index'])->name('users.index');
     });
 
     // Proses Logout Web

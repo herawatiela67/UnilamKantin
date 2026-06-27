@@ -50,7 +50,7 @@ class StandManagerController extends Controller
             'name'     => $request->owner_name,
             'email'    => $request->owner_email,
             'password' => Hash::make($request->owner_password), // Password di-enkripsi demi keamanan
-            // 'role'  => 'pedagang', // <-- Tambahkan ini jika tabel user kamu punya kolom role/level
+            'role'  => 'merchant', // <-- Tambahkan ini jika tabel user kamu punya kolom role/level
         ]);
 
         // 3. Proses upload foto banner stan jika ada

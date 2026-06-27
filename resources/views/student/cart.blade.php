@@ -212,8 +212,9 @@
                     if (result.redirect_url) {
                         window.location.href = result.redirect_url;
                     } else {
-                        // JALUR B: Jika Cash Tunai (Langsung pindah ke halaman tracking berdasarkan id pesanan)
-                        window.location.href = "/student/track/" + result.data.id;
+                        // 🟢 PINDAH KE HOME: Jika Cash Tunai, langsung balikkan mahasiswa ke halaman utama
+                        alert(result.message); // Biar mahasiswa tahu pesanan mereka sudah sukses dibuat
+                        window.location.href = "{{ route('student.home') }}"; 
                     }
                 } else {
                     alert("Error: " + result.message);

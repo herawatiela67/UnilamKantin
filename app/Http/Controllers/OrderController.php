@@ -21,116 +21,125 @@ class OrderController extends Controller
     }
 
     /**
-     * SISI CUSTOMER: Mahasiswa melakukan Checkout/Pemesanan Makanan
+     * SISI CUSTOMER: Mahasiswa melakukan Checkout/Pemesanan Makanan (SPLIT MULTI-STAND ORDER)
      */
-   public function store(Request $request)
-{
-    // 1. Validasi input metode pembayaran dari front-end
-    $request->validate([
-        'payment_method' => 'required|in:cash,cashless',
-        'payment_channel' => 'required_if:payment_method,cashless|nullable|string',
-    ]);
-
-    DB::beginTransaction();
-    try {
-        $user = auth()->user(); 
-        
-        // 2. AMBIL DATA DARI TABEL CARTS (Sinkron dengan keranjang mahasiswa)
-        $cartItems = \App\Models\Cart::where('user_id', $user->id)->get();
-
-        if ($cartItems->isEmpty()) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Keranjang belanja kamu kosong, El!'
-            ], 400);
-        }
-
-        $totalPrice = 0;
-        $firstMenu = null; 
-
-        // 3. Loop Hitung Total Harga & Ambil Data Menu Pertama
-        foreach ($cartItems as $item) {
-            $menu = Menu::find($item->menu_id);
-            if (!$firstMenu) {
-                $firstMenu = $menu; 
-            }
-            $totalPrice += ($menu->price * $item->quantity);
-        }
-
-        $redirectUrl = null; // Default null untuk jalur Cash
-
-        // 4. Buat data induk pesanan (Dinamis sesuai pilihan)
-        $order = Order::create([
-            'user_id' => $user->id,
-            'stand_id' => $firstMenu ? $firstMenu->stand_id : null,
-            'total_price' => $totalPrice,
-            'status' => 'pending',
-            'payment_method' => $request->payment_method, 
-            'payment_channel' => $request->payment_method === 'cash' ? null : $request->payment_channel,
-            'payment_status' => 'unpaid',
+    public function store(Request $request)
+    {
+        // 1. Validasi input metode pembayaran dari front-end
+        $request->validate([
+            'payment_method' => 'required|in:cash,cashless',
+            'payment_channel' => 'required_if:payment_method,cashless|nullable|string',
         ]);
 
-        // 5. Simpan rincian makanan ke tabel 'order_details'
-        foreach ($cartItems as $item) {
-            $menu = Menu::find($item->menu_id);
-            OrderDetail::create([
-                'order_id' => $order->id,
-                'menu_id'  => $menu->id,
-                'quantity' => $item->quantity,
-                'price'    => $menu->price, // Kunci harga saat ini
-            ]);
-        }
-
-        // 🔥 6. INTEGRASI COUPLING MIDTRANS UNTUK JALUR CASHLESS 🔥
-        if ($request->payment_method === 'cashless') {
-            // Konfigurasi dasar Midtrans
-            \Midtrans\Config::$serverKey = config('services.midtrans.server_key');
-            \Midtrans\Config::$isProduction = config('services.midtrans.is_production');
-            \Midtrans\Config::$isSanitized = config('services.midtrans.is_sanitized');
-            \Midtrans\Config::$is3ds = config('services.midtrans.is_3ds');
-
-            // Siapkan payload transaksi
-            $params = [
-                'transaction_details' => [
-                    'order_id' => 'KANTIN-' . $order->id . '-' . time(), // ID unik anti-bentrok
-                    'gross_amount' => (int) $totalPrice,
-                ],
-                'customer_details' => [
-                    'first_name' => $user->name,
-                    'email' => $user->email ?? $user->name . '@mail.com',
-                ],
-            ];
-
-            // Tembak API Midtrans untuk mendapatkan URL Pembayaran SandBox
-            $redirectUrl = \Midtrans\Snap::getSnapUrl($params);
+        DB::beginTransaction();
+        try {
+            $user = auth()->user(); 
             
-            // Simpan snap token ke orderan (opsional, jika kolomnya ada)
-            // $order->update(['snap_token' => $redirectUrl]);
+            // 2. AMBIL DATA KERANJANG MAHASISWA & SEKALIGUS ME-LOAD DATA MENU
+            $cartItems = \App\Models\Cart::with('menu')->where('user_id', $user->id)->get();
+
+            if ($cartItems->isEmpty()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Keranjang belanja kamu kosong, El!'
+                ], 400);
+            }
+
+            // 🟢 INTI PERBAIKAN: Kelompokkan item keranjang berdasarkan stand_id si menu
+            $groupedCartItems = $cartItems->groupBy(function($item) {
+                return $item->menu->stand_id;
+            });
+
+            $totalGrossAmount = 0; // Untuk akumulasi nominal total belanja ke Midtrans
+            $createdOrders = [];   // Menyimpan list orderan yang berhasil dipecah
+
+            // Pembuatan string ID acak untuk menyatukan invoice split di Midtrans
+            $groupInvoiceGroupId = 'GROUP-' . $user->id . '-' . time(); 
+
+            // 3. LOOPING MEMBUAT PESANAN PER STAND
+            foreach ($groupedCartItems as $standId => $items) {
+                
+                // Hitung total harga khusus untuk stan ini
+                $standTotalPrice = 0;
+                foreach ($items as $item) {
+                    $standTotalPrice += ($item->menu->price * $item->quantity);
+                }
+
+                $totalGrossAmount += $standTotalPrice;
+
+                // Buat data induk pesanan UNTUK STAND INI SAJA
+                $order = Order::create([
+                    'user_id' => $user->id,
+                    'stand_id' => $standId, // 🟢 Sekarang terkunci akurat per stand!
+                    'total_price' => $standTotalPrice,
+                    'status' => 'pending',
+                    'payment_method' => $request->payment_method, 
+                    'payment_channel' => $request->payment_method === 'cash' ? null : $request->payment_channel,
+                    'payment_status' => 'unpaid',
+                ]);
+
+                // Simpan rincian makanan khusus milik stan ini
+                foreach ($items as $item) {
+                    OrderDetail::create([
+                        'order_id' => $order->id,
+                        'menu_id'  => $item->menu_id,
+                        'quantity' => $item->quantity,
+                        'price'    => $item->menu->price,
+                    ]);
+                }
+
+                $createdOrders[] = $order;
+            }
+
+            $redirectUrl = null; // Default null untuk jalur Cash
+
+            // 4. INTEGRASI COUPLING MIDTRANS (Akumulasi Total dari Semua Stan)
+            if ($request->payment_method === 'cashless') {
+                \Midtrans\Config::$serverKey = config('services.midtrans.server_key');
+                \Midtrans\Config::$isProduction = config('services.midtrans.is_production');
+                \Midtrans\Config::$isSanitized = config('services.midtrans.is_sanitized');
+                \Midtrans\Config::$is3ds = config('services.midtrans.is_3ds');
+
+                // Siapkan payload transaksi gabungan
+                $params = [
+                    'transaction_details' => [
+                        'order_id' => $groupInvoiceGroupId, // ID Group transaksi gabungan
+                        'gross_amount' => (int) $totalGrossAmount,
+                    ],
+                    'customer_details' => [
+                        'first_name' => $user->name,
+                        'email' => $user->email ?? $user->name . '@mail.com',
+                    ],
+                ];
+
+                // Tembak API Midtrans untuk mendapatkan URL Pembayaran SandBox
+                $redirectUrl = \Midtrans\Snap::getSnapUrl($params);
+            }
+
+            // 5. BERSIHKAN KERANJANG BELANJA MAHASISWA
+            \App\Models\Cart::where('user_id', $user->id)->delete();
+
+            DB::commit();
+
+            // 6. Respons JSON balik ke JavaScript front-end
+            return response()->json([
+                'status' => 'success',
+                'message' => $request->payment_method === 'cashless' ? 
+                'Tautan pembayaran cashless berhasil dibuat. Mengalihkan...' : 
+                'Pesanan berhasil dibuat! Menu otomatis dikirim ke masing-masing stan penjual.',
+                'redirect_url' => $redirectUrl,
+                'data' => $createdOrders
+            ], 201);
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan sistem: ' . $e->getMessage()
+            ], 500);
         }
-
-        // 7. BERSIHKAN KERANJANG BELANJA (Karena pesanan sudah diproses)
-        \App\Models\Cart::where('user_id', $user->id)->delete();
-
-        DB::commit();
-
-        // 8. Respons JSON balik ke JavaScript fetch() front-end
-        return response()->json([
-            'status' => 'success',
-            'message' => $request->payment_method === 'cashless' ? 
-            'Tautan pembayaran cashless berhasil dibuat. Mengalihkan...' : 
-            'Pesanan berhasil dibuat dengan metode Cash. Silakan siapkan uang tunai saat mengambil makanan.',
-            'redirect_url' => $redirectUrl, // Berisi link Midtrans atau null
-            'data' => $order->load('orderdetails.menu')
-        ], 201);
-        
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Terjadi kesalahan sistem: ' . $e->getMessage()
-        ], 500);
     }
-}
+
     /**
      * SISI CUSTOMER: Menampilkan riwayat pesanan milik mahasiswa yang sedang login
      */
@@ -166,7 +175,6 @@ class OrderController extends Controller
         try {
             $userId = auth()->id();
 
-            // Cari stand yang terikat dengan akun pedagang yang sedang login
             $stand = Stand::where('user_id', $userId)->first();
 
             if (!$stand) {
@@ -176,7 +184,6 @@ class OrderController extends Controller
                 ], 404);
             }
 
-            // Ambil data pesanan yang stand_id nya cocok dan memuat detail menunya
             $orders = Order::where('stand_id', $stand->id)
                 ->orWhereHas('orderdetails.menu', function ($query) use ($stand) {
                     $query->where('stand_id', $stand->id);
@@ -203,7 +210,7 @@ class OrderController extends Controller
     }
 
     /**
-     * SISI CUSTOMER & MERCHANT: Mengubah status pesanan (cooking, ready, completed, cancelled)
+     * SISI CUSTOMER & MERCHANT: Mengubah status pesanan
      */
     public function update(Request $request, string $id)
     {
@@ -214,22 +221,15 @@ class OrderController extends Controller
         try {
             $user = auth()->user();
             $userId = $user->id;
-
-            // Cari stand milik pedagang yang sedang login
             $stand = Stand::where('user_id', $userId)->first();
             
-            // --- 🛡️ JALUR MAHASISWA (CUSTOMER) ---
             if ($user->role === 'customer') {
                 $order = Order::where('id', $id)->where('user_id', $userId)->first();
                 
                 if (!$order) {
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => 'Pesanan tidak ditemukan.',
-                    ], 404);
+                    return response()->json([ 'status' => 'error', 'message' => 'Pesanan tidak ditemukan.' ], 404);
                 }
 
-                // Pengaman: Mahasiswa hanya boleh membatalkan jika status pesanan masih 'pending'
                 if ($request->status === 'cancelled') {
                     if ($order->status !== 'pending') {
                         return response()->json([
@@ -238,22 +238,14 @@ class OrderController extends Controller
                         ], 422);
                     }
                 } else {
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => 'Akses ditolak. Kamu cuma bisa membatalkan pesanan sendiri.'
-                    ], 403);
+                    return response()->json([ 'status' => 'error', 'message' => 'Akses ditolak. Kamu cuma bisa membatalkan pesanan sendiri.' ], 403);
                 }
                 
             } else {
-                // --- 🏪 JALUR PEDAGANG (MERCHANT) ---
                 if (!$stand) {
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => 'Stand tidak ditemukan untuk akun ini.'
-                    ], 404);
+                    return response()->json([ 'status' => 'error', 'message' => 'Stand tidak ditemukan untuk akun ini.' ], 404);
                 }
 
-                // Ambil data order milik stand pedagang ini
                 $order = Order::where('id', $id)
                     ->where(function($query) use ($stand) {
                         $query->where('stand_id', $stand->id)
@@ -263,25 +255,15 @@ class OrderController extends Controller
                     })->first();
 
                 if (!$order) {
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => 'Pesanan tidak ditemukan atau bukan milik stand Anda.',
-                    ], 404);
+                    return response()->json([ 'status' => 'error', 'message' => 'Pesanan tidak ditemukan atau bukan milik stand Anda.' ], 404);
                 }
 
-                // Pengaman tambahan: Jika pesanan sudah terlanjur dibatalkan mahasiswa, pedagang tidak bisa memprosesnya lagi
                 if ($order->status === 'cancelled') {
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => 'Gagal! Pesanan ini sudah dibatalkan oleh mahasiswa sebelumnya.'
-                    ], 422);
+                    return response()->json([ 'status' => 'error', 'message' => 'Gagal! Pesanan ini sudah dibatalkan oleh mahasiswa sebelumnya.' ], 422);
                 }
             }
 
-            // --- 💾 PROSES UPDATE STATUS KE DATABASE ---
-            $order->update([
-                'status' => $request->status 
-            ]);
+            $order->update([ 'status' => $request->status ]);
 
             return response()->json([
                 'status' => 'success',
@@ -293,53 +275,31 @@ class OrderController extends Controller
             ], 200);
 
         } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Gagal memperbarui status: ' . $e->getMessage()
-            ], 500);
+            return response()->json([ 'status' => 'error', 'message' => 'Gagal memperbarui status: ' . $e->getMessage() ], 500);
         }
     }
 
-    /**
-     * SISI MERCHANT: Cadangan pengambilan data pesanan merchant berdasarkan keterikatan menu jualan
-     */
     public function getMerchantOrders(Request $request)
     {
         try {
             $userId = auth()->id(); 
 
-            // Menarik data orders yang disaring agar konsisten menggunakan nama relasi camelCase/lowercase 'orderdetails'
             $orders = Order::whereHas('orderdetails.menu', function ($query) use ($userId) {
                     $query->where('user_id', $userId)
                         ->orWhere('merchant_id', $userId);
                 })
-                ->with([
-                    'user:id,name', 
-                    'orderdetails.menu' 
-                ])
+                ->with([ 'user:id,name', 'orderdetails.menu' ])
                 ->orderBy('created_at', 'desc')
                 ->get();
 
-            return response()->json([
-                'status' => 'success',
-                'data' => $orders
-            ], 200);
+            return response()->json([ 'status' => 'success', 'data' => $orders ], 200);
 
         } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Gagal memuat pesanan merchant: ' . $e->getMessage()
-            ], 500);
+            return response()->json([ 'status' => 'error', 'message' => 'Gagal memuat pesanan merchant: ' . $e->getMessage() ], 500);
         }
     }
 
-    public function show(string $id)
-    {
-        //
-    }
+    public function show(string $id) {}
    
-    public function destroy(string $id)
-    {
-        //
-    }
+    public function destroy(string $id) {}
 }
