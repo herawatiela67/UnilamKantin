@@ -11,14 +11,37 @@ use Illuminate\Support\Facades\Hash;
 
 class StandManagerController extends Controller
 {
-   public function index()
-{
-    // Ambil semua data stan beserta relasi user biar tidak n+1 query
-    $stands = \App\Models\Stand::all();
+  public function index()
+    {
+        // Pakai with('user') agar teks "Akun Belum Diikat" hilang dan berganti nama pedagang asli!
+        $stands = Stand::with('user')->latest()->get();
+        // Ambil data user yang rolenya 'merchant' untuk pilihan dropdown saat edit nanti
+        $merchants = User::where('role', 'merchant')->get();
 
-    // 🟢 Pastikan alamatnya tertulis 'admin.stands.index' (pakai titik sesuai subfolder)
-    return view('admin.index', compact('stands'));
-}
+        return view('admin.stand.index', compact('stands', 'merchants'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'stand_name'   => 'required|string|max:255',
+            'stand_number' => 'required|string|max:50',
+            'user_id'      => 'required|exists:users,id',
+            'category'     => 'required|string',
+            'status'       => 'required|in:1,0',
+        ]);
+
+        $stand = Stand::findOrFail($id);
+        $stand->update([
+            'stand_name'   => $request->stand_name,
+            'stand_number' => $request->stand_number,
+            'user_id'      => $request->user_id,
+            'category'     => $request->category,
+            'status'       => $request->status,
+        ]);
+
+        return redirect()->back()->with('success', 'Data stan kuliner berhasil diperbarui!');
+    }
 
     // 2. Menampilkan halaman form tambah stan baru
     public function create()
@@ -61,7 +84,7 @@ class StandManagerController extends Controller
 
         // 4. Hubungkan stan baru dengan ID user yang barusan kita buat ($user->id)
         Stand::create([
-            'user_id'      => $user->id, // 🟢 Mengambil ID otomatis dari akun yang baru lahir di atas!
+            'user_id'      => $user->id, 
             'stand_name'   => $request->stand_name,
             'stand_number' => $request->stand_number,
             'description'  => $request->description,
@@ -71,5 +94,13 @@ class StandManagerController extends Controller
         ]);
 
         return redirect()->route('admin.stands.index')->with('success', 'Pedagang baru dan Stan Kuliner berhasil didaftarkan secara bersamaan!');
+    }
+
+    public function destroy($id)
+    {
+        $stand = Stand::findOrFail($id);
+        $stand->delete();
+
+        return redirect()->back()->with('success', 'Stan kuliner berhasil dihapus dari sistem!');
     }
 }

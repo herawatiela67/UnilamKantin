@@ -16,7 +16,7 @@
                     <i class="fa-solid fa-utensils text-base"></i>
                 </div>
                 <div>
-                    <h2 class="font-black text-sm tracking-wider uppercase text-white">KantinQuick</h2>
+                    <h2 class="font-black text-sm tracking-wider uppercase text-white">UnilamKantin</h2>
                     <p class="text-[10px] text-slate-400 font-bold">PANEL UTAMA ADMIN</p>
                 </div>
             </div>
@@ -24,7 +24,7 @@
             <nav class="space-y-1">
                 <a href="{{ route('admin.dashboard') }}" 
                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition {{ Route::is('admin.dashboard') ? 'bg-orange-500 text-white shadow-md shadow-orange-500/20' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }}">
-                    <i class="fa-solid fa-chart-pie text-sm w-5"></i> Dashboard Dashboard
+                    <i class="fa-solid fa-chart-pie text-sm w-5"></i> Dashboard
                 </a>
                 
                 <a href="{{ route('admin.stands.index') }}" 
@@ -50,7 +50,7 @@
     <main class="p-8 flex-1">
         <div class="mb-8">
             <h1 class="text-xl font-black text-slate-900 tracking-tight">Selamat Datang, Admin!</h1>
-            <p class="text-xs text-slate-500 mt-1 font-medium">Berikut adalah rangkuman performa operasional aplikasi KantinQuick hari ini.</p>
+            <p class="text-xs text-slate-500 mt-1 font-medium">Berikut adalah rangkuman performa operasional aplikasi UnilamKantin hari ini.</p>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">

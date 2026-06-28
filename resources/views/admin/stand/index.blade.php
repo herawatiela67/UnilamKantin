@@ -16,7 +16,7 @@
                     <i class="fa-solid fa-utensils text-base"></i>
                 </div>
                 <div>
-                    <h2 class="font-black text-sm tracking-wider uppercase text-white">KantinQuick</h2>
+                    <h2 class="font-black text-sm tracking-wider uppercase text-white">UnilamKantin</h2>
                     <p class="text-[10px] text-slate-400 font-bold">PANEL UTAMA ADMIN</p>
                 </div>
             </div>
@@ -130,17 +130,17 @@
 
                             <td class="py-4 px-6">
                                 <div class="flex items-center justify-center gap-1.5">
-                                    <a href="#" title="Edit Informasi Stan" class="w-8 h-8 rounded-lg border border-slate-200 text-slate-600 hover:bg-orange-500 hover:text-white hover:border-orange-500 flex items-center justify-center transition shadow-sm cursor-pointer">
+                                    <button onclick="openEditStandModal('{{ $stand->id }}', '{{ $stand->stand_name }}', '{{ $stand->stand_number }}', '{{ $stand->user_id }}', '{{ $stand->category }}', '{{ $stand->status }}')" title="Edit Informasi Stan" class="w-8 h-8 rounded-lg border border-slate-200 text-slate-600 hover:bg-orange-500 hover:text-white hover:border-orange-500 flex items-center justify-center transition shadow-sm cursor-pointer">
                                         <i class="fa-solid fa-pen-to-square text-xs"></i>
-                                    </a>
-                                    
-                                    <a href="#" title="Kelola Akun Pedagang" class="w-8 h-8 rounded-lg border border-slate-200 text-slate-600 hover:bg-blue-500 hover:text-white hover:border-blue-500 flex items-center justify-center transition shadow-sm cursor-pointer">
-                                        <i class="fa-solid fa-user-gear text-xs"></i>
-                                    </a>
-
-                                    <button onclick="return confirm('Hapus stan {{ $stand->stand_name }} dari sistem KantinQuick?')" title="Hapus Stan" class="w-8 h-8 rounded-lg border border-slate-200 text-rose-500 hover:bg-rose-500 hover:text-white hover:border-rose-500 flex items-center justify-center transition shadow-sm cursor-pointer">
-                                        <i class="fa-solid fa-trash-can text-xs"></i>
                                     </button>
+
+                                    <form action="{{ route('admin.stands.destroy', $stand->id) }}" method="POST" onsubmit="return confirm('Hapus stan {{ $stand->stand_name }} dari sistem KantinQuick? Seluruh data menu di stan ini mungkin akan ikut terhapus.')" class="inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" title="Hapus Stan" class="w-8 h-8 rounded-lg border border-slate-200 text-rose-500 hover:bg-rose-500 hover:text-white hover:border-rose-500 flex items-center justify-center transition shadow-sm cursor-pointer">
+                                            <i class="fa-solid fa-trash-can text-xs"></i>
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>
@@ -150,6 +150,91 @@
             </div>
         </div>
     </main>
+    <div id="editStandModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center hidden z-50">
+    <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-150">
+        <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+            <h3 class="text-base font-black text-slate-900 flex items-center gap-2">
+                <i class="fa-solid fa-shop text-orange-500"></i> Edit Data Stan Kuliner
+            </h3>
+            <button onclick="closeEditStandModal()" class="text-slate-400 hover:text-slate-600 text-sm cursor-pointer">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <form id="editStandForm" method="POST" action="">
+            @csrf
+            @method('PATCH')
+
+            <div class="space-y-4 text-xs font-bold text-slate-600">
+                <div>
+                    <label class="block mb-1.5">Nama Stan / Lapak</label>
+                    <input type="text" id="modalStandName" name="stand_name" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-slate-800 bg-slate-50 focus:outline-none focus:border-orange-500" required>
+                </div>
+
+                <div>
+                    <label class="block mb-1.5">Nomor Stan</label>
+                    <input type="text" id="modalStandNumber" name="stand_number" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-slate-800 bg-slate-50 focus:outline-none focus:border-orange-500" required>
+                </div>
+
+                <div>
+                    <label class="block mb-1.5">Ikat ke Akun Pedagang</label>
+                    <select id="modalUserId" name="user_id" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-slate-800 bg-slate-50 focus:outline-none focus:border-orange-500 cursor-pointer" required>
+                        @foreach($merchants as $merchant)
+                            <option value="{{ $merchant->id }}">{{ $merchant->name }} ({{ $merchant->email }})</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block mb-1.5">Kategori Utama</label>
+                    <select id="modalCategory" name="category" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-slate-800 bg-slate-50 focus:outline-none focus:border-orange-500 font-bold cursor-pointer" required>
+                        <option value="Makanan Berat">MAKANAN</option>
+                        <option value="Cemilan">CEMILAN</option>
+                        <option value="Minuman">MINUMAN</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block mb-1.5">Status Operasional</label>
+                    <select id="modalStatus" name="status" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-slate-800 bg-slate-50 focus:outline-none focus:border-orange-500 cursor-pointer" required>
+                        <option value="1">BUKA / AKTIF</option>
+                        <option value="0">TUTUP / ISTIRAHAT</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 mt-6 pt-4 border-t border-slate-100">
+                <button type="button" onclick="closeEditStandModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 font-bold text-xs text-slate-600 cursor-pointer">Batal</button>
+                <button type="submit" class="px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-black text-xs shadow-md shadow-orange-500/20 cursor-pointer">Simpan Perubahan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openEditStandModal(id, name, number, userId, category, status) {
+        const modal = document.getElementById('editStandModal');
+        const form = document.getElementById('editStandForm');
+        
+        // Isi value form modal secara otomatis sesuai baris yang diklik
+        document.getElementById('modalStandName').value = name;
+        document.getElementById('modalStandNumber').value = number;
+        document.getElementById('modalUserId').value = userId;
+        document.getElementById('modalCategory').value = category;
+        document.getElementById('modalStatus').value = status;
+        
+        // Set action form secara dinamis ke URL update backend
+        form.action = `/admin/stands/${id}`;
+        
+        // Munculkan modal (hapus class hidden)
+        modal.classList.remove('hidden');
+    }
+
+    function closeEditStandModal() {
+        const modal = document.getElementById('editStandModal');
+        modal.classList.add('hidden');
+    }
+</script>
 
 </body>
 </html>

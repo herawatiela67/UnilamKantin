@@ -84,6 +84,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::get('/stands', [StandManagerController::class, 'index'])->name('stands.index');
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
+        Route::get('/users', [UserController::class, 'index'])->name('users.index');
+        Route::patch('/users/{id}', [UserController::class, 'update'])->name('users.update');
+        Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
+        Route::get('/stands', [StandManagerController::class, 'index'])->name('stands.index');
+        Route::patch('/stands/{id}', [StandManagerController::class, 'update'])->name('stands.update');
+        Route::delete('/stands/{id}', [StandManagerController::class, 'destroy'])->name('stands.destroy');
     });
 
     // Proses Logout Web

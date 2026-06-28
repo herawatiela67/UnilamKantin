@@ -16,4 +16,29 @@ class UserController extends Controller
 
         return view('admin.users.index', compact('users'));
     }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'role' => 'required|in:mahasiswa,merchant', 
+        ]);
+
+        $user = User::findOrFail($id);
+        $user->update([
+            'name' => $request->name,
+            'role' => $request->role,
+        ]);
+
+        return redirect()->back()->with('success', 'Data akun berhasil diperbarui!');
+    }
+
+    // 3. DELETE: Menghapus Akun
+    public function destroy($id)
+    {
+        $user = User::findOrFail($id);
+        $user->delete();
+
+        return redirect()->back()->with('success', 'Akun pengguna berhasil dihapus!');
+    }
 }

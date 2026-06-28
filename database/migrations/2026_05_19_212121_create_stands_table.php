@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('stand_number');
             $table->string('image')->nullable();
             $table->text('description')->nullable()->comment('Deskripsi singkat mengenai stan jualan');
-            $table->enum('category', ['makanan', 'cemilan', 'minuman'])->default('makanan');
+            $table->string('category', ['makanan', 'cemilan', 'minuman'])->default('makanan');
             $table->boolean('status')->default(true); 
             $table->timestamps();
         });

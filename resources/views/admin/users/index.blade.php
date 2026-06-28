@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KantinQuick Admin - Manajemen User</title>
+    <title>UnilamKantin Admin - Manajemen User</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -16,7 +16,7 @@
                     <i class="fa-solid fa-utensils text-base"></i>
                 </div>
                 <div>
-                    <h2 class="font-black text-sm tracking-wider uppercase text-white">KantinQuick</h2>
+                    <h2 class="font-black text-sm tracking-wider uppercase text-white">UnilamKantin</h2>
                     <p class="text-[10px] text-slate-400 font-bold">PANEL UTAMA ADMIN</p>
                 </div>
             </div>
@@ -28,7 +28,7 @@
                 <a href="{{ route('admin.stands.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition {{ Route::is('admin.stands.*') ? 'bg-orange-500 text-white shadow-md shadow-orange-500/20' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }}">
                     <i class="fa-solid fa-store text-sm w-5"></i> Manajemen Stan
                 </a>
-                <a href="{{ route('admin.users.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition {{ Route::is('admin.users.*') ? 'bg-orange-500 text-white shadow-md shadow-orange-500/20' : 'text-white bg-orange-500 shadow-md shadow-orange-500/20' }}">
+                <a href="{{ route('admin.users.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition bg-orange-500 text-white shadow-md shadow-orange-500/20">
                     <i class="fa-solid fa-users text-sm w-5"></i> Manajemen User
                 </a>
             </nav>
@@ -43,14 +43,19 @@
     </aside>
 
     <main class="p-8 flex-1">
+        
+        @if(session('success'))
+        <div class="mb-6 p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-xl font-bold flex items-center gap-2 shadow-sm">
+            <i class="fa-solid fa-circle-check text-base text-emerald-600"></i>
+            {{ session('success') }}
+        </div>
+        @endif
+
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
             <div>
                 <h1 class="text-xl font-black text-slate-900 tracking-tight">Manajemen Pengguna Aplikasi</h1>
                 <p class="text-xs text-slate-500 mt-1 font-medium">Kelola hak akses, status perizinan, dan akun pengguna baik Mahasiswa maupun Merchant (Pedagang).</p>
             </div>
-            <button class="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs px-5 py-3 rounded-xl shadow-lg transition transform active:scale-95 cursor-pointer">
-                <i class="fa-solid fa-user-plus text-sm"></i> Tambah User Baru
-            </button>
         </div>
 
         <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
@@ -91,7 +96,7 @@
                                     </span>
                                 @else
                                     <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-blue-50 text-blue-700 font-bold text-[10px] border border-blue-200 uppercase">
-                                        <i class="fa-solid fa-graduation-cap text-[9px]"></i> Customer
+                                        <i class="fa-solid fa-graduation-cap text-[9px]"></i> {{ $user->role }}
                                     </span>
                                 @endif
                             </td>
@@ -102,26 +107,86 @@
 
                             <td class="py-4 px-6 text-center">
                                 <div class="flex items-center justify-center gap-1.5">
-                                    <button title="Ubah User" class="w-8 h-8 rounded-lg border border-slate-200 text-slate-600 hover:bg-orange-500 hover:text-white hover:border-orange-500 flex items-center justify-center transition shadow-sm cursor-pointer">
+                                    <button onclick="openEditModal('{{ $user->id }}', '{{ $user->name }}', '{{ $user->role }}')" title="Ubah User" class="w-8 h-8 rounded-lg border border-slate-200 text-slate-600 hover:bg-orange-500 hover:text-white hover:border-orange-500 flex items-center justify-center transition shadow-sm cursor-pointer">
                                         <i class="fa-solid fa-user-pen text-xs"></i>
                                     </button>
-                                    <button onclick="return confirm('Hapus pengguna {{ $user->name }}?')" title="Hapus User" class="w-8 h-8 rounded-lg border border-slate-200 text-rose-500 hover:bg-rose-500 hover:text-white hover:border-rose-500 flex items-center justify-center transition shadow-sm cursor-pointer">
-                                        <i class="fa-solid fa-user-xmark text-xs"></i>
-                                    </button>
+                                    
+                                    <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('Hapus pengguna {{ $user->name }}? Semua data stan yang terikat mungkin akan ikut terpengaruh.')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" title="Hapus User" class="w-8 h-8 rounded-lg border border-slate-200 text-rose-500 hover:bg-rose-500 hover:text-white hover:border-rose-500 flex items-center justify-center transition shadow-sm cursor-pointer">
+                                            <i class="fa-solid fa-user-xmark text-xs"></i>
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>
                         @endforeach
-                        @if($users->isEmpty())
-                        <tr>
-                            <td colspan="5" class="text-center py-10 text-slate-400 font-medium">Tidak ada data pengguna lain di database.</td>
-                        </tr>
-                        @endif
                     </tbody>
                 </table>
             </div>
         </div>
     </main>
 
+    <div id="editModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-150">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+                <h3 class="text-base font-black text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-user-gear text-orange-500"></i> Edit Akses Pengguna
+                </h3>
+                <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600 text-sm cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="editForm" method="POST" action="">
+                @csrf
+                @method('PATCH')
+
+                <div class="space-y-4 text-xs font-bold text-slate-600">
+                    <div>
+                        <label class="block mb-1.5">Nama Pengguna</label>
+                        <input type="text" id="modalName" name="name" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 font-semibold focus:outline-none focus:border-orange-500 text-slate-800 bg-slate-50">
+                    </div>
+
+                    <div>
+                        <label class="block mb-1.5">Hak Akses / Role Aplikasi</label>
+                        <select id="modalRole" name="role" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 font-bold focus:outline-none focus:border-orange-500 text-slate-800 bg-slate-50 cursor-pointer">
+                            <option value="mahasiswa">CUSTOMER / MAHASISWA</option>
+                            <option value="merchant">MERCHANT / PEDAGANG</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 mt-6 pt-4 border-t border-slate-100">
+                    <button type="button" onclick="closeEditModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 font-bold text-xs text-slate-600 cursor-pointer">Batal</button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-black text-xs shadow-md shadow-orange-500/20 cursor-pointer">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+    function openEditModal(id, name, role) {
+        const modal = document.getElementById('editModal');
+        const form = document.getElementById('editForm');
+        
+        // Set input nilai default berdasarkan baris yang diklik
+        document.getElementById('modalName').value = name;
+        document.getElementById('modalRole').value = role;
+        
+        // Set action URL secara dinamis ke rute patch Laravel
+        form.action = `/admin/users/${id}`;
+        
+        // Munculkan modal
+        modal.classList.remove('hidden');
+    } // 🟢 Sudah aman ada kurawal tutupnya
+
+    function closeEditModal() {
+        const modal = document.getElementById('editModal');
+        // Sembunyikan kembali modal dengan menambahkan class 'hidden'
+        modal.classList.add('hidden');
+    } // 🟢 Sudah aman dan kodenya bersih
+</script>
 </body>
 </html>
