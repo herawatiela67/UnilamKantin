@@ -32,14 +32,14 @@
 
     @include('student.partials.active_orders')
 
-    <div>
-        <div class="flex gap-2 overflow-x-auto pb-1 style-scrollbar-none">
-            <button onclick="filterStand('all', this)" class="category-btn bg-orange-500 text-white font-bold text-xs px-4 py-2 rounded-full whitespace-nowrap shadow-sm shadow-orange-500/20">Semua Stan</button>
-            <button onclick="filterStand('makanan', this)" class="category-btn bg-white text-gray-600 font-semibold text-xs px-4 py-2 rounded-full border border-gray-100 whitespace-nowrap hover:bg-orange-50 hover:text-orange-500 transition">Stan Makanan</button>
-            <button onclick="filterStand('cemilan', this)" class="category-btn bg-white text-gray-600 font-semibold text-xs px-4 py-2 rounded-full border border-gray-100 whitespace-nowrap hover:bg-orange-50 hover:text-orange-500 transition">Stan Cemilan</button>
-            <button onclick="filterStand('minuman', this)" class="category-btn bg-white text-gray-600 font-semibold text-xs px-4 py-2 rounded-full border border-gray-100 whitespace-nowrap hover:bg-orange-50 hover:text-orange-500 transition">Stan Minuman</button>
-        </div>
-    </div>
+   <div>
+    <div class="flex gap-2 overflow-x-auto pb-1 style-scrollbar-none">
+    <button onclick="filterStand('all', this)" class="category-btn bg-orange-500 text-white font-bold text-xs px-4 py-2 rounded-full whitespace-nowrap shadow-sm shadow-orange-500/20">Semua Stan</button>
+    <button onclick="filterStand('Makanan Berat', this)" class="category-btn bg-white text-gray-600 font-semibold text-xs px-4 py-2 rounded-full border border-gray-100 whitespace-nowrap hover:bg-orange-50 hover:text-orange-500 transition">Stan Makanan</button>
+    <button onclick="filterStand('cemilan', this)" class="category-btn bg-white text-gray-600 font-semibold text-xs px-4 py-2 rounded-full border border-gray-100 whitespace-nowrap hover:bg-orange-50 hover:text-orange-500 transition">Stan Cemilan</button>
+    <button onclick="filterStand('minuman', this)" class="category-btn bg-white text-gray-600 font-semibold text-xs px-4 py-2 rounded-full border border-gray-100 whitespace-nowrap hover:bg-orange-50 hover:text-orange-500 transition">Stan Minuman</button>
+</div>
+</div>
 
     <div class="flex justify-between items-center pt-2">
         <h2 class="font-extrabold text-base text-gray-900 tracking-tight flex items-center gap-1.5">
@@ -59,35 +59,36 @@
 
     // LOGIKA FILTER UTAMA (GABUNGAN SEARCH + BUTTON KATEGORI)
     function jalankanFilterGabungan() {
-        const searchInput = document.getElementById('searchStandInput').value.toLowerCase();
-        const standCards = document.querySelectorAll('.stand-card');
-        let foundCount = 0;
+    const searchInput = document.getElementById('searchStandInput').value.toLowerCase().trim();
+    const standCards = document.querySelectorAll('.stand-card');
+    let foundCount = 0;
 
-        standCards.forEach(card => {
-            const standName = card.getAttribute('data-name') || '';
-            const standCategory = card.getAttribute('data-category');
+    standCards.forEach(card => {
+        // Ambil data dari atribut HTML, paksa ke huruf kecil
+        const standName = (card.getAttribute('data-name') || '').toLowerCase().trim();
+        const standCategory = (card.getAttribute('data-category') || '').toLowerCase().trim();
 
-            const cocokKategori = (currentCategory === 'all' || standCategory === currentCategory);
-            const cocokNama = standName.includes(searchInput);
+        // Logika pencocokan yang super ketat tapi aman
+        const cocokKategori = (currentCategory === 'all' || standCategory === currentCategory.toLowerCase().trim());
+        const cocokNama = standName.includes(searchInput);
 
-            if (cocokKategori && cocokNama) {
-                card.style.display = 'block'; 
-                foundCount++;
-            } else {
-                card.style.display = 'none';
-            }
-        });
+        // Debugging otomatis ke Console F12 Firefox kamu
+        console.log(`Stan: ${standName} | Kategori DB: ${standCategory} | Filter Aktif: ${currentCategory} | Cocok? ${cocokKategori}`);
 
-        // Pengkondisian untuk teks notifikasi kosong
-        const noResultElement = document.getElementById('noStandFound');
-        if (noResultElement) {
-            if (foundCount === 0) {
-                noResultElement.style.display = 'block';
-            } else {
-                noResultElement.style.display = 'none';
-            }
+        if (cocokKategori && cocokNama) {
+            card.style.setProperty('display', 'block', 'important'); 
+            foundCount++;
+        } else {
+            card.style.setProperty('display', 'none', 'important');
         }
+    });
+
+    // Notifikasi jika kosong
+    const noResultElement = document.getElementById('noStandFound');
+    if (noResultElement) {
+        noResultElement.style.setProperty('display', foundCount === 0 ? 'block' : 'none', 'important');
     }
+}
 
     // Pemicu Filter saat Tombol Kategori diklik
     function filterStand(category, button) {

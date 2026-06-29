@@ -15,7 +15,7 @@
         </div>
 
         <h1 class="text-3xl font-bold text-[#962D15]">UnilamKantin</h1>
-        <p class="text-sm text-gray-400 mt-1 tracking-wide">Campus Dining, Simplified.</p>
+        <p class="text-sm text-gray-400 mt-1 tracking-wide">Universitas La Tansa Mashiro</p>
     </div>
 
     <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
@@ -83,7 +83,7 @@
     </div>
 
     <footer class="text-center text-[11px] text-gray-400 mt-8">
-        &copy; 2026 UnilamKantin. Built for Speed.
+        &copy; 2026 UnilamKantin
     </footer>
 
     <script>

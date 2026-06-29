@@ -7,8 +7,8 @@
         <!-- 🟢 PERBAIKAN: Ditambahkan class "stand-card" dan attribute "data-category" di bawah ini -->
         <a href="{{ route('student.stand.detail', $stand->id) }}" 
             class="stand-card block bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md hover:border-orange-100 transition duration-200"
-            data-category="{{ $stand->category }}"
-            data-name="{{ strtolower($stand->stand_name) }}"> <!-- 🟢 Tambahkan ini agar search input bisa baca -->
+            data-category="{{ strtolower(trim($stand['category'] ?? $stand->attributes['category'] ?? '')) }}"
+            data-name="{{ strtolower(trim($stand->stand_name)) }}"> <!-- 🟢 Tambahkan ini agar search input bisa baca -->
            
             <div class="relative h-36 bg-gray-100">
                 <img src="{{ $imgUrl }}" alt="{{ $stand->stand_name }}" class="w-full h-full object-cover">

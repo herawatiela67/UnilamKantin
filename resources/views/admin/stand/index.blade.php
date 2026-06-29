@@ -188,9 +188,9 @@
                 <div>
                     <label class="block mb-1.5">Kategori Utama</label>
                     <select id="modalCategory" name="category" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-slate-800 bg-slate-50 focus:outline-none focus:border-orange-500 font-bold cursor-pointer" required>
-                        <option value="Makanan Berat">MAKANAN</option>
-                        <option value="Cemilan">CEMILAN</option>
-                        <option value="Minuman">MINUMAN</option>
+                        <option value="makanan berat">MAKANAN BERAT</option>
+                        <option value="cemilan">CEMILAN</option>
+                        <option value="minuman">MINUMAN</option>
                     </select>
                 </div>
 

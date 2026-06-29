@@ -1,24 +1,24 @@
  @if($menuTerbaru != null)
-        <div onclick="scrollToMenu('menu-{{ $menuTerbaru->menu_id ?? $menuTerbaru->id }}')" class="cursor-pointer bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl p-4 text-white shadow-md relative overflow-hidden transition transform active:scale-95">
-            <div class="absolute -right-6 -bottom-6 opacity-10 text-8xl">
-                <i class="fa-solid fa-utensils"></i>
-            </div>
-            
-            <span class="bg-emerald-500/30 text-emerald-100 text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full tracking-wider border border-emerald-500/20">
-                ✨ Menu Baru Rilis
-            </span>
-            
-            <h3 class="font-extrabold text-base mt-2 leading-tight">
-                Cobain {{ $menuTerbaru->menu_name }} <br>
-                di <span class="text-amber-200">{{ $menuTerbaru->stand_name }}</span>!
-            </h3>
-            
-            <p class="text-[10px] text-orange-100 mt-1.5 font-medium flex items-center gap-1">
-                <i class="fa-solid fa-tags text-[9px]"></i> 
-                Hanya Rp {{ number_format($menuTerbaru->price, 0, ',', '.') }} • Yuk serbu sebelum kehabisan!
-            </p>
+    <a href="{{ route('student.stand.detail', $menuTerbaru->stand_id) }}" class="block cursor-pointer bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl p-4 text-white shadow-md relative overflow-hidden transition transform active:scale-95 hover:opacity-95">
+        <div class="absolute -right-6 -bottom-6 opacity-10 text-8xl">
+            <i class="fa-solid fa-utensils"></i>
         </div>
-    @else
+        
+        <span class="bg-emerald-500/30 text-emerald-100 text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full tracking-wider border border-emerald-500/20">
+            ✨ Menu Baru Rilis
+        </span>
+        
+        <h3 class="font-extrabold text-base mt-2 leading-tight">
+            Cobain {{ $menuTerbaru->menu_name }} <br>
+            di <span class="text-amber-200">{{ $menuTerbaru->stand_name }}</span>!
+        </h3>
+        
+        <p class="text-[10px] text-orange-100 mt-1.5 font-medium flex items-center gap-1">
+            <i class="fa-solid fa-tags text-[9px]"></i> 
+            Hanya Rp {{ number_format($menuTerbaru->price, 0, ',', '.') }} • Yuk serbu sebelum kehabisan!
+        </p>
+    </a>
+@else
         <div class="space-y-4">
     <button onclick="openSpinnerModal()" class="w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white p-4 rounded-2xl shadow-md flex items-center justify-between hover:opacity-90 transition active:scale-98">
         <div class="flex items-center gap-3">

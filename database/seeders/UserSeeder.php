@@ -31,6 +31,7 @@ class UserSeeder extends Seeder
             'user_id' => $merchant->id,
             'stand_name' => 'Ayam Bakar Si Mamah',
             'stand_number' => 'Lapak No. 1',
+            'category'     => 'Makanan',
         ]);
 
         //Mas Geprek (User ID: 3, Stand ID: 2)
@@ -45,6 +46,7 @@ class UserSeeder extends Seeder
             'user_id' => $merchant2->id,
             'stand_name' => 'Ayam Geprek',
             'stand_number' => 'Lapak No. 2',
+            'category'     => 'Minuman',
         ]);
 
         //Akun Customer (Mahasiswa)
