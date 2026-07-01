@@ -116,21 +116,30 @@ public function notificationPage()
 
 
 
-   public function showStand($id)
-    {
-        // 1. Cari data stand berdasarkan ID dari rute
-        $stand = Stand::findOrFail($id);
+  public function showStand($id)
+{
+    // 1. Cari data stand berdasarkan ID dari rute
+    $stand = Stand::findOrFail($id);
 
-        // 2. Ambil semua menu makanan milik stand tersebut
-        $menus = Menu::where('stand_id', $id)->get();
+    // 🟢 HITUNG SECARA REAL-TIME: Hitung jumlah nota transaksi yang sudah selesai
+    // Ini disamakan persis dengan logika COUNT(orders.id) di halaman Beranda kamu!
+    $totalSelesai = DB::table('orders')
+        ->where('stand_id', $id)
+        ->where('status', '=', 'selesai') // Menggunakan 'selesai' huruf kecil sesuai database-mu
+        ->count(); // Menggunakan count() untuk menghitung jumlah baris data transaksi
 
-        // 3. Dummy tracker agar tidak error saat halaman dimuat
-        $activeOrdersTracking = collect();
+    // Masukkan hasilnya ke properti total_terjual agar dibaca oleh Blade
+    $stand->total_terjual = $totalSelesai;
 
-        // 4. Lempar data ke view detail mahasiswa yang sudah kita buat kemarin
-        return view('student.stand_detail', compact('stand', 'menus', 'activeOrdersTracking'));
-    
-    }
+    // 2. Ambil semua menu makanan milik stand tersebut
+    $menus = Menu::where('stand_id', $id)->get();
+
+    // 3. Dummy tracker agar tidak error saat halaman dimuat
+    $activeOrdersTracking = collect();
+
+    // 4. Lempar data ke view detail mahasiswa
+    return view('student.stand_detail', compact('stand', 'menus', 'activeOrdersTracking'));
+}
  // Pastikan Model Menu di-import di bagian atas file
 
  // 🟢 Pastikan urutannya: Request dulu baru $menuId

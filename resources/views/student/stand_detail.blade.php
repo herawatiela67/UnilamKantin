@@ -24,9 +24,12 @@
         <div class="absolute bottom-4 left-4 right-4 text-white">
             <div class="flex items-center gap-2 mb-1.5">
                 <div class="bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded flex items-center gap-1">
-                    <i class="fa-solid fa-star text-amber-300 text-[9px]"></i> 4.8
+                    <i class="fa-solid fa-star text-amber-300 text-[9px]"></i> 
+                    @php
+                        $ratingOtomatis = 4.4 + min(($stand->total_terjual / 5) * 0.1, 0.6);
+                    @endphp
+                    {{ number_format($ratingOtomatis, 1) }}
                 </div>
-                <span class="text-xs font-medium opacity-90"><i class="fa-regular fa-clock text-[11px] mr-1"></i> 15-20 min</span>
             </div>
             <h1 class="text-xl font-bold tracking-wide">{{ $stand->stand_name }}</h1>
             <p class="text-xs text-gray-200 mt-0.5">{{ $stand->description ?? 'Lapak Nomor ' . ($stand->stand_number ?? '-') }}</p>
