@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Stand;
 Use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 
 class StandManagerController extends Controller
@@ -29,6 +30,7 @@ class StandManagerController extends Controller
             'user_id'      => 'required|exists:users,id',
             'category'     => 'required|string',
             'status'       => 'required|in:1,0',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         $stand = Stand::findOrFail($id);
@@ -40,9 +42,25 @@ class StandManagerController extends Controller
             'status'       => $request->status,
         ]);
 
-        return redirect()->back()->with('success', 'Data stan kuliner berhasil diperbarui!');
+       if ($request->hasFile('image')) {
+        
+        // Hapus foto banner lama dari folder storage jika sebelumnya sudah ada foto
+        if ($stand->image && Storage::disk('public')->exists($stand->image)) {
+            Storage::disk('public')->delete($stand->image);
+        }
+
+        // Simpan foto banner baru ke dalam folder 'public/stan-banners'
+        $path = $request->file('image')->store('stan-banners', 'public');
+        
+        // Masukkan path foto baru ke dalam array data yang akan di-update
+        $data['image'] = $path;
     }
 
+    // 3. Update data stan beserta foto barunya (jika ada) ke database
+    $stand->update($data);
+
+    return redirect()->back()->with('success', 'Data stan kuliner berhasil diperbarui!');
+}
     // 2. Menampilkan halaman form tambah stan baru
     public function create()
     {

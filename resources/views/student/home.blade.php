@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="apple-touch-icon" href="{{ asset('/images/logopwa.svg') }}?v=2">
+    <link rel="manifest" href="{{ asset('/manifest.json') }}?v=2">   
+    <meta name="theme-color" content="#f97316">
+    <meta name="apple-mobile-web-app-capable" content="UnilamKantin">
     <title>UnilamKantin - Home</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -243,6 +247,14 @@
     // Interval hitung berkala per 5 detik sekali
     setInterval(cekNotifikasiBaru, 5000);
     document.addEventListener('DOMContentLoaded', cekNotifikasiBaru);
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('PWA KantinQuick Aktif!', reg))
+                .catch(err => console.log('PWA Gagal:', err));
+        });
+    }
 </script>
 </body>
 </html>

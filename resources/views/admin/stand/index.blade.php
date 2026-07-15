@@ -161,11 +161,11 @@
             </button>
         </div>
 
-        <form id="editStandForm" method="POST" action="">
+        <form id="editStandForm" method="POST" action="" enctype="multipart/form-data">
             @csrf
             @method('PATCH')
 
-            <div class="space-y-4 text-xs font-bold text-slate-600">
+            <div class="space-y-4 text-xs font-bold text-slate-600 max-h-[60vh] overflow-y-auto px-1 pb-2">
                 <div>
                     <label class="block mb-1.5">Nama Stan / Lapak</label>
                     <input type="text" id="modalStandName" name="stand_name" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-slate-800 bg-slate-50 focus:outline-none focus:border-orange-500" required>
@@ -201,9 +201,26 @@
                         <option value="0">TUTUP / ISTIRAHAT</option>
                     </select>
                 </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Banner Stan Saat Ini</label>
+                    @if(isset($stand) && $stand->image)
+                        <img src="{{ asset('storage/' . $stand->image) }}" alt="Banner Stand" class="w-full h-32 object-cover rounded-xl border border-gray-200 shadow-sm">
+                    @else
+                        <div class="w-full h-28 bg-slate-100 rounded-xl border border-dashed border-slate-300 flex items-center justify-center text-slate-400 text-xs font-normal">
+                            Belum ada foto banner
+                        </div>
+                    @endif
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Ganti Foto Banner Stan</label>
+                    <input type="file" name="image" accept="image/*" class="w-full p-2 border border-slate-200 rounded-xl text-sm file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100">
+                    <p class="text-[10px] text-gray-400 font-normal mt-1">*Format: JPG, JPEG, PNG. Maksimal 2MB.</p>
+                </div>
             </div>
 
-            <div class="flex items-center justify-end gap-2 mt-6 pt-4 border-t border-slate-100">
+            <div class="flex items-center justify-end gap-2 mt-4 pt-4 border-t border-slate-100">
                 <button type="button" onclick="closeEditStandModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 font-bold text-xs text-slate-600 cursor-pointer">Batal</button>
                 <button type="submit" class="px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-black text-xs shadow-md shadow-orange-500/20 cursor-pointer">Simpan Perubahan</button>
             </div>
