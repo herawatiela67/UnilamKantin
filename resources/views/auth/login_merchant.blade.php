@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-[#1A1A1A] text-gray-100 antialiased max-w-md mx-auto min-h-screen flex flex-col justify-center px-6 py-8 shadow-2xl relative">
+<body class="bg-[#1A1A1A] antialiased w-full min-h-screen flex flex-col justify-center px-6 py-8 shadow-2xl relative">
 
     <div class="w-full text-center mb-6">
         <div class="text-amber-500 text-5xl mb-3">

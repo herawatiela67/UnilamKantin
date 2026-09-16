@@ -7,14 +7,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-gray-50 text-gray-800 antialiased max-w-md mx-auto min-h-screen shadow-lg relative pb-44">
+<body class="bg-gray-50 text-gray-800 antialiased w-full min-h-screen relative pb-24">
 
     <header class="bg-white px-4 py-3 flex items-center gap-4 border-b border-gray-100 sticky top-0 z-50 shadow-sm">
         <a href="{{ route('student.home') }}" class="text-gray-700 p-1 hover:text-orange-500 transition"><i class="fa-solid fa-arrow-left text-xl"></i></a>
         <h1 class="font-bold text-base text-gray-900">Keranjang Belanja</h1>
     </header>
 
-    <main class="p-4">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         @if(session('success'))
             <div class="bg-green-50 text-green-700 p-3 rounded-xl mb-4 text-xs font-bold border border-green-100 flex items-center gap-2">
                 <i class="fa-solid fa-circle-check"></i> {{ session('success') }}
@@ -51,7 +51,7 @@
                             <span class="ml-auto text-[10px] bg-orange-200 text-orange-800 px-1.5 py-0.5 rounded-md">{{ count($items) }} Menu</span>
                         </div>
 
-                        <div class="space-y-2.5">
+                        <div class="lg:col-span-2 space-y-4">
                             @foreach($items as $item)
                                 @php
                                     $menuImage = optional($item->menu)->image;
@@ -165,7 +165,7 @@
                     </div>
                 </div>
 
-                <div class="fixed bottom-16 max-w-md w-full bg-white border-t border-gray-100 p-4 left-0 right-0 mx-auto z-50 shadow-2xl">
+                <div class="fixed bottom-16 w-full bg-white border-t border-gray-100 p-4 left-0 right-0 mx-auto z-50 shadow-2xl">
                     <button type="submit" id="btn-submit" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-center py-3 rounded-xl shadow-lg transition tracking-wide text-sm flex items-center justify-center gap-2 transform active:scale-98 cursor-pointer">
                         <i class="fa-solid fa-receipt"></i> Pesan Sekarang
                     </button>

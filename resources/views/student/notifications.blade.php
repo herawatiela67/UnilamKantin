@@ -13,7 +13,7 @@
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 antialiased max-w-md mx-auto min-h-screen shadow-lg relative pb-12">
+<body class="bg-gray-50 text-gray-800 antialiased w-full min-h-screen relative pb-12">
 
     <div class="bg-white p-4 sticky top-0 z-40 border-b border-gray-100 flex items-center gap-3 shadow-sm">
         <a href="{{ route('student.home') }}" class="text-gray-500 hover:text-orange-500 transition text-sm p-1">

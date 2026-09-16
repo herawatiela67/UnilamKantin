@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-[#F5F5F5] text-gray-800 antialiased max-w-md mx-auto min-h-screen flex flex-col justify-center px-6 py-8 shadow-lg relative">
+<body class="bg-[#F5F5F5] antialiased w-full min-h-screen flex flex-col justify-center px-6 py-8 shadow-lg relative">
 
     <div class="w-full text-center mb-6">
         <div class="text-[#C0392B] text-5xl mb-3">
@@ -17,8 +17,6 @@
         <h1 class="text-3xl font-bold text-[#962D15]">UnilamKantin</h1>
         <p class="text-sm text-gray-400 mt-1 tracking-wide">Universitas La Tansa Mashiro</p>
     </div>
-
-    <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
         
         <div class="bg-[#E3F2FD] text-blue-600 font-bold text-xs text-center py-3 rounded-full tracking-wider mb-6">
             🔐 GERBANG MASUK MAHASISWA
@@ -54,7 +52,7 @@
             </div>
 
             <div class="text-right mb-5">
-                <a href="#" class="text-[#962D15] text-xs font-medium hover:underline">Lupa Password?</a>
+                <a href="{{ route('password.request') }}" class="text-[#962D15] text-xs font-medium hover:underline">Lupa Password?</a>
             </div>
 
             <button type="submit" class="w-full bg-[#FF5722] hover:bg-orange-600 text-white font-bold py-3.5 rounded-full shadow-md hover:shadow-lg transition tracking-wide text-sm mb-4">
@@ -71,7 +69,7 @@
    <div class="text-center mt-5 text-xs text-gray-500">
     Pemilik Stand Kantin? 
     <a href="{{ route('merchant.login') }}" class="text-[#962D15] font-bold underline ml-0.5 hover:text-red-800">Masuk Lewat Sini</a>
-</div>
+    </div>
 
     <div class="grid grid-cols-2 gap-4 mt-6">
         <div class="h-24 rounded-xl overflow-hidden bg-gray-200">

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Password;
 use App\Models\User;
 use App\Models\Menu;
 use App\Models\Stand;
@@ -137,10 +138,35 @@ public function adminLogin(Request $request)
         'name' => $request->name,
         'email' => $request->email,
         'password' => Hash::make($request->password),
-        'role' => 'mahasiswa', // 🟢 OTOMATIS DIKUNCI JADI MAHASISWA DI SINI
+        'role' => 'mahasiswa', 
     ]);
 
     return redirect()->route('login')->with('success', 'Registrasi Mahasiswa Berhasil!');
+}
+//Menampilkan halaman lupa password
+public function ShowForgotPasswordForm()
+
+    {
+        return view('auth.forgot_pw');
+    }
+//Memproses pengiriman link reset password
+public function sendResetLinkEmail(Request $request)
+{
+    //validasi format email
+    $request->validate([
+        'email' => ['required', 'email'],
+    ]);
+
+    //kirim link reset password via mailer laravel menggunakan env
+    $status = Password::sendResetLink(
+        $request->only('email')
+    );
+
+    //jika berhasil kirim email notifikasi sukses
+    return $status === Password::RESET_LINK_SENT
+    ? back()-> with('status', __($status))
+    : back()-> withInput($request->only('email'))
+            -> withErrors(['email' => ($status)]);
 }
 
     // 1. Tampilkan Halaman Login Khusus Merchant

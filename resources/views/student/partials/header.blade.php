@@ -34,7 +34,7 @@
 
         <form action="{{ route('logout') }}" method="POST" class="flex items-center">
             @csrf
-            <button type="submit" class="text-gray-400 hover:text-red-500 p-1.5 transition focus:outline-none flex items-center justify-center active:scale-95" onclick="return confirm('Keluar dari KantinQuick?')">
+            <button type="submit" class="text-gray-400 hover:text-red-500 p-1.5 transition focus:outline-none flex items-center justify-center active:scale-95" onclick="return confirm('Keluar dari UnilamKantin?')">
                 <i class="fa-solid fa-right-from-bracket text-lg"></i>
             </button>
         </form>

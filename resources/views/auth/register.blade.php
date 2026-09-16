@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-[#F5F5F5] text-gray-800 antialiased max-w-md mx-auto min-h-screen flex flex-col justify-center px-6 py-8 shadow-lg relative">
+<body class="bg-[#F5F5F5] text-gray-800 antialiased w-full min-h-screen flex flex-col justify-center px-6 py-8 shadow-lg relative">
 
     <div class="w-full text-center mb-6">
         <div class="text-[#C0392B] text-5xl mb-3">
@@ -42,7 +42,7 @@
             </div>
 
             <div class="mb-4">
-                <label class="block font-semibold text-sm text-gray-700 mb-1.5">NIM / Email</label>
+                <label class="block font-semibold text-sm text-gray-700 mb-1.5">Email</label>
                 <div class="bg-[#F0EDED] rounded-xl px-4 py-3 flex items-center gap-3 border border-transparent focus-within:border-gray-300 transition">
                     <i class="fa-regular fa-envelope text-gray-400 text-lg"></i>
                     <input type="text" name="email" value="{{ old('email') }}" placeholder="Masukkan NIM atau Email" class="bg-transparent w-full text-sm focus:outline-none placeholder-gray-400" required>

@@ -17,11 +17,11 @@
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 antialiased max-w-md mx-auto min-h-screen shadow-lg relative pb-24">
+<body class="bg-gray-50 text-gray-800 antialiased w-full min-h-screen relative pb-24">
 
 @include('student.partials.header')
 
-<main class="p-4 space-y-5">
+<main class="p-4 md:px-8 lg:px-12 w-full space-y-6">
 
     @include('student.partials.gacha')
 

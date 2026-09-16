@@ -1,14 +1,14 @@
-<div class="space-y-4" id="stands-container">
-    @foreach($stands as $stand)
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        @foreach($stands as $stand)
         @php
             $imgUrl = $stand->image ? asset('storage/' . $stand->image) : 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=500';
         @endphp
 
-        <!-- 🟢 PERBAIKAN: Ditambahkan class "stand-card" dan attribute "data-category" di bawah ini -->
+        <!-- Ditambahkan class "stand-card" dan attribute "data-category" di bawah ini -->
         <a href="{{ route('student.stand.detail', $stand->id) }}" 
             class="stand-card block bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md hover:border-orange-100 transition duration-200"
             data-category="{{ strtolower(trim($stand['category'] ?? $stand->attributes['category'] ?? '')) }}"
-            data-name="{{ strtolower(trim($stand->stand_name)) }}"> <!-- 🟢 Tambahkan ini agar search input bisa baca -->
+            data-name="{{ strtolower(trim($stand->stand_name)) }}"> <!-- agar search input bisa baca -->
            
             <div class="relative h-36 bg-gray-100">
                 <img src="{{ $imgUrl }}" alt="{{ $stand->stand_name }}" class="w-full h-full object-cover">

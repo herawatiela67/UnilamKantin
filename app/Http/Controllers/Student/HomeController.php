@@ -32,12 +32,12 @@ class HomeController extends Controller
             'stands.stand_number',
             'stands.image',       
             'stands.description', 
-            'stands.category',    // 🟢 1. TAMBAHKAN INI BIAR KATEGORI KELUAR KE HTML!
+            'stands.category',    //  1. TAMBAHKAN INI BIAR KATEGORI KELUAR KE HTML!
             'stands.status',
             DB::raw('(SELECT COUNT(*) FROM orders WHERE orders.stand_id = stands.id AND orders.status IN ("masuk", "dimasak")) as orders_count'),
             DB::raw('COUNT(orders.id) as total_terjual')
         )
-        // 🟢 2. JANGAN LUPA TAMBAHKAN 'stands.category' JUGA DI GROUP BY DI BAWAH INI:
+        // 2. JANGAN LUPA TAMBAHKAN 'stands.category' JUGA DI GROUP BY DI BAWAH INI:
         ->groupBy('stands.id', 'stands.stand_name', 'stands.stand_number', 'stands.image', 'stands.description', 'stands.category', 'stands.status')
         ->orderBy('total_terjual', 'desc')
         ->get();

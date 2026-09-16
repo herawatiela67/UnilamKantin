@@ -1,6 +1,6 @@
 @props(['active' => 'home'])
 
-<div class="fixed bottom-0 max-w-md w-full bg-white border-t border-gray-100 shadow-lg z-50 left-0 right-0 mx-auto">
+<div class="fixed bottom-0 w-full bg-white border-t border-gray-100 shadow-lg z-50 left-0 right-0">
     <nav class="grid grid-cols-4 w-full h-16 bg-white">
         
         <a href="{{ route('student.home') }}" 

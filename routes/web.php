@@ -30,6 +30,14 @@ Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [AuthController::class, 'register'])->name('register.submit');
 
+//Rute lupa password
+Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])->name('password.request');
+Route::post('/forgot-password', [AuthController::class, 'sendResetLinkEmail'])->name('password.email');
+
+// 2. Rute Eksekusi Reset (WAJIB ADA agar tidak error lagi)
+Route::get('/reset-password/{token}', [AuthController::class, 'showResetPasswordForm'])->name('password.reset');
+Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
+
 // --- LOGIN KHUSUS PEDAGANG / MERCHANT ---
 Route::get('/merchant/login', [AuthController::class, 'showMerchantLoginForm'])->name('merchant.login');
 Route::post('/merchant/login', [AuthController::class, 'merchantLogin'])->name('merchant.login.submit');

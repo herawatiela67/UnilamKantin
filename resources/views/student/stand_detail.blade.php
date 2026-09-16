@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-gray-50 text-gray-800 antialiased max-w-md mx-auto min-h-screen shadow-lg relative pb-28">
+<body class="bg-gray-50 text-gray-800 antialiased w-full min-h-screen flex flex-col pb-24 bg-white relative">
 
     <div class="relative h-52 w-full bg-gray-200">
         @php

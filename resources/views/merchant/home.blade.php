@@ -18,7 +18,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style> body { font-family: 'Plus Jakarta Sans', sans-serif; } </style>
 </head>
-<body class="bg-[#F5F5F5] text-gray-800 antialiased max-w-md mx-auto min-h-screen flex flex-col pb-24 shadow-lg bg-white relative">
+<body class="bg-[#F5F5F5] text-gray-800 antialiased w-full min-h-screen flex flex-col pb-24 shadow-lg bg-white relative">
 
     <div class="bg-[#962D15] p-5 text-white rounded-b-3xl shadow-md sticky top-0 z-50">
         <div class="flex justify-between items-center mb-4">

@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-gray-50 text-gray-800 antialiased max-w-md mx-auto min-h-screen shadow-lg relative pb-28">
+<body class="bg-gray-50 text-gray-800 antialiased w-full min-h-screen flex flex-col pb-24 bg-white relative">
 
     <header class="bg-white px-4 py-3 flex items-center gap-4 border-b border-gray-100 sticky top-0 z-50 shadow-sm">
         <a href="{{ route('student.home') }}" class="text-gray-700 p-1 hover:text-orange-500 transition">

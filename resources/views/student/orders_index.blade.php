@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style> body { font-family: 'Plus Jakarta Sans', sans-serif; } </style>
 </head>
-<body class="bg-gray-50 text-gray-800 antialiased max-w-md mx-auto min-h-screen flex flex-col pb-24 shadow-lg bg-white relative">
+<body class="bg-gray-50 text-gray-800 antialiased w-full min-h-screen flex flex-col pb-24 shadow-lg bg-white relative">
 
     <header class="bg-white px-4 py-3 flex items-center gap-4 border-b border-gray-100 sticky top-0 z-50 shadow-sm">
         <a href="{{ route('student.home') }}" class="text-gray-700 p-1 hover:text-orange-500 transition">

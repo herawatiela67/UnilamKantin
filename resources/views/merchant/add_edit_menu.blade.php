@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-[#F5F5F5] text-gray-800 antialiased max-w-md mx-auto min-h-screen flex flex-col shadow-lg bg-white">
+<body class="bg-[#F5F5F5] text-gray-800 antialiased w-full min-h-screen flex flex-col shadow-lg bg-white">
 
     <div class="bg-white p-4 sticky top-0 z-10 shadow-sm flex items-center gap-4">
         <a href="{{ route('merchant.home') }}" class="text-gray-600 hover:text-gray-900 text-xl">
