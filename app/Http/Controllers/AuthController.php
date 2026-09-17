@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Support\Str;
 use App\Models\User;
 use App\Models\Menu;
 use App\Models\Stand;
@@ -167,6 +169,47 @@ public function sendResetLinkEmail(Request $request)
     ? back()-> with('status', __($status))
     : back()-> withInput($request->only('email'))
             -> withErrors(['email' => ($status)]);
+}
+
+// Menampilkan form reset password saat link dari email diklik
+public function showResetPasswordForm(Request $request, $token = null)
+{
+    return view('auth.reset_pw', [
+        'token' => $token,
+        'email' => $request->email
+    ]);
+}
+
+// Tambahkan method ini di dalam class AuthController
+public function resetPassword(Request $request)
+{
+    // 1. Validasi Input Form
+    $request->validate([
+        'token' => 'required',
+        'email' => 'required|email',
+        'password' => 'required|min:8|confirmed',
+    ]);
+
+    // 2. Eksekusi Reset Password via Laravel Password Broker
+    $status = Password::reset(
+        $request->only('email', 'password', 'password_confirmation', 'token'),
+        function ($user, $password) {
+            $user->forceFill([
+                'password' => Hash::make($password)
+            ])->setRememberToken(Str::random(60));
+
+            $user->save();
+
+            event(new PasswordReset($user));
+        }
+    );
+
+    // 3. Respon Setelah Berhasil/Gagal
+    if ($status === Password::PASSWORD_RESET) {
+        return redirect()->route('login')->with('status', __($status));
+    }
+
+    return back()->withErrors(['email' => [__($status)]]);
 }
 
     // 1. Tampilkan Halaman Login Khusus Merchant

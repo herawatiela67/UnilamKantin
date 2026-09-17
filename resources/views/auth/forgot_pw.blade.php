@@ -21,12 +21,11 @@
             🔑PULIHKAN KATA SANDI MAHASISWA
         </div>
 
-        @if (session('error'))
-            <div class="bg-red-50 text-red-600 p-3.5 rounded-xl text-xs font-bold mb-4 border border-green-200 flex items-start gap-2">
-                <i class="fa-solid fa-circle-check mt-0.5"></i>
-                <span>{{ session('error') }}</span>
-            </div>      
-        @endif
+        @if (session('status'))
+    <div style="background-color: #d1e7dd; color: #0f5132; padding: 12px; margin-bottom: 15px; border-radius: 5px;">
+        {{ session('status') }}
+    </div>
+@endif
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
             <p class="text-xs text-gray-500 mb-4 leading-relaxed">
                 Masukkan email terdaftar kamu. Kami akan mengirimkan tautan khusus untuk mengatur ulang kata sandi akunmu.
