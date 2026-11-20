@@ -51,7 +51,7 @@
             </div>
         </a>
     @endforeach
-    <div id="noStandFound" style="display: none;" class="text-center py-12 text-gray-400 text-sm">
+    <div id="noStandFound" style="display: none;" class="col-span-full flex flex-col items-center mx-auto text-center py-12 text-gray-400 text-sm">
         <i class="fa-solid fa-store-slash text-3xl mb-3 text-gray-300 block animate-bounce"></i>
         <p class="font-medium text-gray-500">Stan yang kamu cari tidak ada, nih...</p>
         <p class="text-xs text-gray-400 mt-1">Coba ketik kata kunci lain atau ganti kategori di atas.</p>

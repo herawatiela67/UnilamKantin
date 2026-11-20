@@ -1,23 +1,34 @@
-const CACHE_NAME = 'unilamkantin-cache-v1';
-const assetsToCache = [
-    '/',
-    '/manifest.json'
-];
+const CACHE_NAME = 'unilamkantin-v1';
 
 // Proses Install Service Worker
 self.addEventListener('install', event => {
+    // Langsung aktifkan service worker baru tanpa menunggu tab lama ditutup
+    self.skipWaiting();
+});
+
+// Proses Aktifasi & Bersihkan Cache Lama
+self.addEventListener('activate', event => {
     event.waitUntil(
-        caches.open(CACHE_NAME).then(cache => {
-            return cache.addAll(assetsToCache);
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames
+                    .filter(name => name !== CACHE_NAME)
+                    .map(name => caches.delete(name))
+            );
         })
     );
+    self.clients.claim();
 });
 
 // Proses Ambil Data (Fetch)
 self.addEventListener('fetch', event => {
+    // Hanya tangani request GET; biarkan POST/PUT/DELETE langsung ke server
+    if (event.request.method !== 'GET') {
+        return;
+    }
+
+    // Utamakan ambil data terbaru dari jaringan agar status stan & pesanan selalu sinkron
     event.respondWith(
-        caches.match(event.request).then(response => {
-            return response || fetch(event.request);
-        })
+        fetch(event.request).catch(() => caches.match(event.request))
     );
 });

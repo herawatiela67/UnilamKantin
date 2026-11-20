@@ -6,6 +6,7 @@
     <title>UnilamKantin - Login Mahasiswa</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
 </head>
 <body class="bg-[#F5F5F5] antialiased w-full min-h-screen flex flex-col justify-center px-6 py-8 shadow-lg relative">
 
@@ -83,11 +84,24 @@
     <footer class="text-center text-[11px] text-gray-400 mt-8">
         &copy; 2026 UnilamKantin
     </footer>
+   
 
     <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function (registration) {
+                        console.log('Service Worker terdaftar:', registration.scope);
+                    })
+                    .catch(function (error) {
+                        console.log('Gagal daftar Service Worker:', error);
+                    });
+            });
+        }
         function togglePasswordVisibility() {
             const passwordInput = document.getElementById('passwordInput');
             const passwordIcon = document.getElementById('passwordIcon');
+           
             
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
@@ -100,5 +114,6 @@
             }
         }
     </script>
+    
 </body>
 </html>

@@ -58,6 +58,20 @@ class OrderController extends Controller
 
             // 3. LOOPING MEMBUAT PESANAN PER STAND
             foreach ($groupedCartItems as $standId => $items) {
+                // 1. Ambil data stan berdasarkan $standId
+                $stand = Stand::find($standId);
+
+                // 2. Cek apakah stan ada dan statusnya 0 (tutup)
+                if (!$stand || $stand->status == 0) {
+                    DB::rollBack();
+
+                    $namaStand = $stand->stand_name ?? 'stan tersebut';
+
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => "Maaf, {$namaStand} sedang tutup sehingga pesanan tidak bisa dikirim."
+                    ], 422);
+                }
                 
                 // Hitung total harga khusus untuk stan ini
                 $standTotalPrice = 0;
@@ -234,7 +248,7 @@ class OrderController extends Controller
                     if ($order->status !== 'pending') {
                         return response()->json([
                             'status' => 'error',
-                            'message' => 'Gagal batalin, pesananmu udah terlanjur dimasak sama pedagang, La!'
+                            'message' => 'Gagal batalin, pesananmu udah terlanjur dimasak sama pedagang!'
                         ], 422);
                     }
                 } else {
